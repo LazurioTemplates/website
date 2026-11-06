@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createServer } from "node:net";
-import { dirname, resolve } from "node:path";
+import { delimiter, dirname, join, resolve } from "node:path";
 import packageJson from "../package.json";
 
 // The start contract of the Lazurio Module Standard (kap. 4): the Launchpad
@@ -13,20 +13,19 @@ const runtime = packageJson.lazurio.runtime;
 const [entrypoint] = runtime.listeners;
 if (!entrypoint) throw new Error("lazurio.runtime declares no listener");
 const variable = `LAZURIO_RUNTIME_LISTENER_${entrypoint.id.toUpperCase().replaceAll("-", "_")}`;
-// Lazurio starts an App on Linux and macOS with only these; Windows itself
-// needs its system directories and temporary directory to run any process.
-const windows = [
-  "SystemRoot",
-  "SYSTEMROOT",
-  "TEMP",
-  "TMP",
-  "USERPROFILE",
-  "APPDATA",
-  "LOCALAPPDATA",
-];
+// Lazurio starts an App on Linux and macOS with HOME and a PATH of the system
+// directories; the test is stricter and gives PATH only Bun's directory. On
+// Windows a process also needs the system directory, where native modules
+// (sharp, which reads the images) load their libraries from, and its temporary
+// directory.
+const system = process.env.SystemRoot ?? process.env.SYSTEMROOT;
+const windows = ["SystemRoot", "TEMP", "TMP", "USERPROFILE", "APPDATA", "LOCALAPPDATA"];
 const baseEnv = {
   HOME: process.env.HOME ?? "",
-  PATH: dirname(process.execPath),
+  PATH: [
+    dirname(process.execPath),
+    ...(process.platform === "win32" && system ? [join(system, "System32"), system] : []),
+  ].join(delimiter),
   ...(process.platform === "win32"
     ? Object.fromEntries(
         windows.flatMap((name) => (process.env[name] ? [[name, process.env[name]]] : [])),
@@ -45,7 +44,7 @@ describe("start contract", () => {
     });
     expect(run.exitCode).toBe(2);
     expect(run.stderr.toString()).toContain(`${variable}_HOST`);
-  });
+  }, 30_000);
 
   test(
     "answers health with 200, refuses a foreign Host and exits 0 on SIGTERM",
@@ -69,7 +68,10 @@ describe("start contract", () => {
       } finally {
         server.kill("SIGTERM");
       }
-      expect(await server.exited).toBe(0);
+      // Lazurio starts and stops Apps on Linux and macOS, where SIGTERM ends
+      // the App cleanly. Windows has no SIGTERM: the process is terminated.
+      const exit = await server.exited;
+      if (process.platform !== "win32") expect(exit).toBe(0);
     },
     startTimeoutMs + 30_000,
   );

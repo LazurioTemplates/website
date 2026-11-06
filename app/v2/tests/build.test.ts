@@ -220,7 +220,12 @@ for (const language of LANGUAGES) {
           (sum, src) => sum + statSync(join(built().dir, src as string)).size,
           0,
         );
-        expect(bytes, address).toBeLessThan(4_000);
+        const inline = [
+          ...html.matchAll(/<script(?![^>]*application\/ld\+json)[^>]*>([\s\S]*?)<\/script>/g),
+        ]
+          .map(([, code]) => (code ?? "").length)
+          .reduce((sum, length) => sum + length, 0);
+        expect(bytes + inline, address).toBeLessThan(4_000);
       }
     });
 
