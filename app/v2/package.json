@@ -1,5 +1,5 @@
 {
-  "name": "website-app-v1",
+  "name": "website-app-v2",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -28,9 +28,9 @@
   "lazurio": {
     "runtime": {
       "schema_version": "lazurio.runtime.v1",
-      "id": "replace-with-org-slug-website-v1",
+      "id": "replace-with-org-slug-website-v2",
       "title": "Website",
-      "company": "replace-with-org-slug",
+      "company": "REPLACE-WITH-ORG-NAME",
       "module": "website",
       "surface": "internal",
       "dev_script": "dev",
@@ -54,7 +54,7 @@
     },
     "preparation": {
       "schema_version": "lazurio.preparation.v1",
-      "owner_package": "app/v1/package.json",
+      "owner_package": "app/v2/package.json",
       "prepare_script": "prepare:app",
       "check_script": "check:prepared"
     }

@@ -1,7 +1,7 @@
 {
   "schema_version": "lazurio.module.v1",
   "id": "website",
-  "company": "replace-with-org-slug",
+  "company": "REPLACE-WITH-ORG-NAME",
   "tcp_port_policy": {
     "mode": "single"
   },
@@ -13,7 +13,7 @@
     }
   ],
   "apps": [
-    "app/v1/package.json"
+    "app/v2/package.json"
   ],
-  "default_app": "app/v1/package.json"
+  "default_app": "app/v2/package.json"
 }
