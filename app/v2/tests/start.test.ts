@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createServer } from "node:net";
-import { delimiter, dirname, join, resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import packageJson from "../package.json";
 
 // The start contract of the Lazurio Module Standard (kap. 4): the Launchpad
@@ -13,25 +13,18 @@ const runtime = packageJson.lazurio.runtime;
 const [entrypoint] = runtime.listeners;
 if (!entrypoint) throw new Error("lazurio.runtime declares no listener");
 const variable = `LAZURIO_RUNTIME_LISTENER_${entrypoint.id.toUpperCase().replaceAll("-", "_")}`;
-// Lazurio starts an App on Linux and macOS with HOME and a PATH of the system
-// directories; the test is stricter and gives PATH only Bun's directory. On
-// Windows a process also needs the system directory, where native modules
-// (sharp, which reads the images) load their libraries from, and its temporary
-// directory.
-const system = process.env.SystemRoot ?? process.env.SYSTEMROOT;
-const windows = ["SystemRoot", "TEMP", "TMP", "USERPROFILE", "APPDATA", "LOCALAPPDATA"];
-const baseEnv = {
-  HOME: process.env.HOME ?? "",
-  PATH: [
-    dirname(process.execPath),
-    ...(process.platform === "win32" && system ? [join(system, "System32"), system] : []),
-  ].join(delimiter),
-  ...(process.platform === "win32"
+// Lazurio starts an App on Linux and macOS in a closed environment: HOME and
+// a PATH of the system directories; the test is stricter and gives PATH only
+// Bun's directory. Lazurio does not start Apps on Windows, where the test
+// checks what a person's own `bun run dev` does, in their environment without
+// the listener variables (a Windows run showed astro dev failing to load the
+// content in the closed environment and answering in a normal one).
+const baseEnv: Record<string, string | undefined> =
+  process.platform === "win32"
     ? Object.fromEntries(
-        windows.flatMap((name) => (process.env[name] ? [[name, process.env[name]]] : [])),
+        Object.entries(process.env).filter(([name]) => !name.startsWith("LAZURIO_RUNTIME_")),
       )
-    : {}),
-};
+    : { HOME: process.env.HOME ?? "", PATH: dirname(process.execPath) };
 const startTimeoutMs = 60_000;
 
 describe("start contract", () => {
