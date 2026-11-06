@@ -20,7 +20,7 @@ Work in a task worktree of this module on a branch of its own.
 
 | Field | What it is | Form |
 | --- | --- | --- |
-| `email` | The general e-mail | `info@firma.cz` |
+| `email` | The general e-mail | `info@example.org` |
 | `phone` | The general phone | digits and spaces, `+420 123 456 789` |
 | `address` | `street`, `postalCode`, `city`, `country` | `110 00`, `Praha 1` |
 | `hours` | Rows of `days` and `time` | `Pondělí až čtvrtek`, `9.00–17.00` |

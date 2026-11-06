@@ -13,7 +13,26 @@ const runtime = packageJson.lazurio.runtime;
 const [entrypoint] = runtime.listeners;
 if (!entrypoint) throw new Error("lazurio.runtime declares no listener");
 const variable = `LAZURIO_RUNTIME_LISTENER_${entrypoint.id.toUpperCase().replaceAll("-", "_")}`;
-const baseEnv = { HOME: process.env.HOME ?? "", PATH: dirname(process.execPath) };
+// Lazurio starts an App on Linux and macOS with only these; Windows itself
+// needs its system directories and temporary directory to run any process.
+const windows = [
+  "SystemRoot",
+  "SYSTEMROOT",
+  "TEMP",
+  "TMP",
+  "USERPROFILE",
+  "APPDATA",
+  "LOCALAPPDATA",
+];
+const baseEnv = {
+  HOME: process.env.HOME ?? "",
+  PATH: dirname(process.execPath),
+  ...(process.platform === "win32"
+    ? Object.fromEntries(
+        windows.flatMap((name) => (process.env[name] ? [[name, process.env[name]]] : [])),
+      )
+    : {}),
+};
 const startTimeoutMs = 60_000;
 
 describe("start contract", () => {

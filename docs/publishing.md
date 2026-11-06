@@ -39,7 +39,7 @@ hosting, domain or DNS for a module.
 
 In `data/v2/<language>/` and with the person:
 
-- `site.yaml`: `url` is the real public address (`https://www.firma.cz`,
+- `site.yaml`: `url` is the real public address (`https://www.example.org`,
   without a path), `description` and the link preview (`shareImage`) are the
   Organization's, and `indexing: true` is set in the same pull request that
   is published, never earlier.
