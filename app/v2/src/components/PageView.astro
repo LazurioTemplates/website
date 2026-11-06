@@ -1,0 +1,138 @@
+---
+import Button from "@design-system/components/ui/Button.astro";
+import { render } from "astro:content";
+import type { Site } from "../lib/site";
+import CallToAction from "./CallToAction.astro";
+import ContactDetails from "./ContactDetails.astro";
+import ContentImage from "./ContentImage.astro";
+import Hero from "./Hero.astro";
+import NewsList from "./NewsList.astro";
+import ServiceGrid from "./ServiceGrid.astro";
+
+// A page of data/v2/<language>/pages/: its hero or title, facts, highlights
+// and text, then the list it shows (services, news or contacts). The home
+// page adds the services and the newest news by itself.
+interface Props {
+  site: Site;
+  entry: Site["home"];
+}
+
+const { site, entry } = Astro.props;
+const { data } = entry;
+const t = site.texts;
+const { Content } = await render(entry);
+const home = entry.id === "index";
+const hasBody = (entry.body ?? "").trim().length > 0;
+const latest = site.news.slice(0, 3);
+const cta = site.settings.callToAction;
+---
+
+<div class="site-container">
+  {
+    data.hero ? (
+      <Hero hero={data.hero} />
+    ) : (
+      <header class="site-page-header">
+        <h1>{data.title}</h1>
+      </header>
+    )
+  }
+
+  {
+    data.facts && (
+      <dl class="site-facts">
+        {data.facts.map((fact) => (
+          <div class="site-fact">
+            <dt>{fact.label}</dt>
+            <dd>{fact.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+
+  {
+    data.highlights && (
+      <ul class="site-highlights" role="list">
+        {data.highlights.map((item) => (
+          <li>
+            <h2>{item.title}</h2>
+            <p>{item.text}</p>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  {data.image && data.imageAlt && <ContentImage src={data.image} alt={data.imageAlt} />}
+
+  {
+    hasBody && (
+      <div class="prose site-section">
+        <Content />
+      </div>
+    )
+  }
+
+  {
+    data.shows === "services" && (
+      <section class="site-section" aria-labelledby="services-list">
+        <h2 id="services-list" class="site-visually-hidden">
+          {t.servicesList}
+        </h2>
+        <ServiceGrid site={site} services={site.services} />
+      </section>
+    )
+  }
+  {
+    data.shows === "news" && (
+      <section class="site-section" aria-labelledby="news-list">
+        <h2 id="news-list" class="site-visually-hidden">
+          {t.newsList}
+        </h2>
+        <NewsList site={site} news={site.news} />
+      </section>
+    )
+  }
+  {
+    data.shows === "contacts" && (
+      <div class="site-section">
+        <ContactDetails site={site} />
+      </div>
+    )
+  }
+
+  {
+    home && site.services.length > 0 && (
+      <section class="site-section" aria-labelledby="services">
+        <div class="site-section-head">
+          <h2 id="services">{t.servicesHeading}</h2>
+          {site.lists.services && (
+            <Button href={site.lists.services.path} variant="ghost">
+              {t.allServices}
+            </Button>
+          )}
+        </div>
+        <ServiceGrid site={site} services={site.services} />
+      </section>
+    )
+  }
+
+  {
+    home && latest.length > 0 && (
+      <section class="site-section" aria-labelledby="news">
+        <div class="site-section-head">
+          <h2 id="news">{t.newsHeading}</h2>
+          {site.lists.news && (
+            <Button href={site.lists.news.path} variant="ghost">
+              {t.allNews}
+            </Button>
+          )}
+        </div>
+        <NewsList site={site} news={latest} />
+      </section>
+    )
+  }
+
+  {(home || data.shows === "services") && cta && <CallToAction cta={cta} />}
+</div>

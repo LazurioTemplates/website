@@ -1,0 +1,26 @@
+# Contacts on the contact page, in the footer and in the data for search
+# engines. Every field is described in data/v2/README.md.
+email: info@example.com
+phone: +420 123 456 789
+address:
+  street: Ukázková 12
+  postalCode: 110 00
+  city: Praha 1
+  country: Česko
+hours:
+  - days: Pondělí až čtvrtek
+    time: 9.00–17.00
+  - days: Pátek
+    time: 9.00–14.00
+company:
+  id: "00000000"
+  vatId: CZ00000000
+  register: Společnost je zapsaná v obchodním rejstříku vedeném Městským soudem v Praze, oddíl C, vložka 000000.
+people:
+  - name: Jana Příkladová
+    role: Nové zakázky a nabídky
+    email: jana.prikladova@example.com
+    phone: +420 123 456 780
+  - name: Petr Ukázka
+    role: Běžící projekty a měření
+    email: petr.ukazka@example.com

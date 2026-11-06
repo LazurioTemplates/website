@@ -1,0 +1,30 @@
+---
+import Button from "@design-system/components/ui/Button.astro";
+import Base from "../layouts/Base.astro";
+import { documentTitle } from "../lib/seo";
+import { loadSite } from "../lib/site";
+
+// Lazurio's static server and most hosting services answer an unknown
+// address with this page and status 404 (`static_fallback: "404"`).
+const site = await loadSite();
+const t = site.texts;
+const contacts = site.lists.contacts;
+---
+
+<Base
+  site={site}
+  title={documentTitle(t.notFoundTitle, site.settings.name)}
+  description={t.notFoundText}
+  path={null}
+>
+  <div class="site-container">
+    <header class="site-page-header">
+      <h1>{t.notFoundTitle}</h1>
+      <p class="lead">{t.notFoundText}</p>
+    </header>
+    <p class="site-actions">
+      <Button href="/" variant="primary">{t.notFoundHome}</Button>
+      {contacts && <Button href={contacts.path}>{contacts.entry.data.title}</Button>}
+    </p>
+  </div>
+</Base>

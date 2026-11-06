@@ -1,0 +1,7 @@
+# Every text file is checked out with LF on every system, so that the locked
+# copy of the design system keeps its SHA-256 (app/v2/src/design-system/) and
+# Biome sees the same files on Windows.
+* text=auto eol=lf
+*.png binary
+*.webp binary
+*.jpg binary

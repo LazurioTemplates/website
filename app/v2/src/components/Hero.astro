@@ -1,0 +1,29 @@
+---
+// The design system's hero (`.hero`, `.eyebrow`, `.lead`) with its buttons:
+// the first action is the one primary button of the view.
+import Button from "@design-system/components/ui/Button.astro";
+import type { PageData } from "../content/schemas";
+
+interface Props {
+  hero: NonNullable<PageData<unknown>["hero"]>;
+}
+
+const { hero } = Astro.props;
+---
+
+<div class="hero site-hero">
+  {hero.eyebrow && <p class="eyebrow">{hero.eyebrow}</p>}
+  <h1>{hero.title}</h1>
+  {hero.lead && <p class="lead">{hero.lead}</p>}
+  {
+    hero.actions.length > 0 && (
+      <p class="site-actions">
+        {hero.actions.map((action, index) => (
+          <Button href={action.href} variant={index === 0 ? "primary" : "secondary"}>
+            {action.label}
+          </Button>
+        ))}
+      </p>
+    )
+  }
+</div>

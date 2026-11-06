@@ -1,0 +1,58 @@
+---
+import { telHref } from "../lib/format";
+import type { Site } from "../lib/site";
+
+interface Props {
+  site: Site;
+}
+
+const { site } = Astro.props;
+const { settings, contacts } = site;
+const t = site.texts;
+const links = [...site.mainMenu, ...site.footerMenu];
+const year = new Date().getUTCFullYear();
+---
+
+<footer class="site-footer">
+  <div class="site-container site-footer-inner">
+    <div>
+      <a class="wordmark" href="/" aria-label={t.homeLink(settings.name)}>
+        {settings.name}<span class="signal-dot" aria-hidden="true"></span>
+      </a>
+      <p>{settings.legalName}</p>
+    </div>
+    <div>
+      <h2 class="site-footer-heading">{t.contactsHeading}</h2>
+      <address>
+        {contacts.address.street}<br />
+        {contacts.address.postalCode}&nbsp;{contacts.address.city}<br />
+        <a class="site-footer-link" href={`mailto:${contacts.email}`}>{contacts.email}</a><br />
+        <a class="site-footer-link" href={telHref(contacts.phone)}>{contacts.phone}</a>
+      </address>
+    </div>
+    <div>
+      <h2 class="site-footer-heading">{t.companyDetails}</h2>
+      <p>
+        {t.companyId}&nbsp;{contacts.company.id}
+        {contacts.company.vatId && <><br />{t.vatId}&nbsp;{contacts.company.vatId}</>}
+      </p>
+      {contacts.company.register && <p class="site-quiet">{contacts.company.register}</p>}
+    </div>
+    {
+      links.length > 0 && (
+        <nav aria-label={t.footerNavigation}>
+          <ul class="site-footer-links">
+            {links.map((item) => (
+              <li>
+                <a class="site-footer-link" href={item.path}>
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+  </div>
+  <p class="site-container site-copyright">© {year} {settings.legalName}</p>
+</footer>

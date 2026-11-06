@@ -1,0 +1,37 @@
+Website template of the Lazurio Marketplace, LazurioTemplates/website
+Copyright (c) 2026 Lazurio contributors, licensed under MIT (see LICENSE).
+
+Everything in this repository outside design-system/ is covered by the MIT
+license: the code of the App, the content in data/v2/ in both languages, the
+four images in data/v2/cs/media/ and data/v2/en/media/ (drawn for this
+template), the skills for agents and the screenshots in docs/screenshots/.
+
+The company is invented. "Example", "Example s.r.o.", its wordmark, address,
+company and VAT numbers, register entry, people, services, prices, figures and
+news are fictional; they describe no real company, person or customer. The
+e-mail addresses use example.com, a domain reserved for examples. The license
+covers the files, not a trademark: an Organization that adopts this template
+replaces the fictional company with its own (docs/adoption.md).
+
+Third-party material
+--------------------
+
+- Design system. design-system/ is the release v1.0.0 of
+  LazurioTemplates/design-system (https://github.com/LazurioTemplates/design-system),
+  merged unchanged, Copyright (c) 2026 Lazurio contributors, MIT License; its
+  own LICENSE and NOTICE are in design-system/. The website uses its tokens,
+  stylesheet and components.
+- Fonts. The design system's tokens name "Inter" and "JetBrains Mono" in their
+  font stacks; a browser uses them only when they are installed, otherwise
+  the system font. No font file is shipped or loaded from a CDN. The text in
+  the images of data/v2/*/media/ was drawn with DejaVu Sans (Bitstream Vera
+  and DejaVu licenses); no font file is included.
+- Dependencies. The App installs its npm dependencies at preparation time
+  (app/v2/package.json, app/v2/bun.lock); they are not part of this
+  repository and keep their own licenses: Astro (MIT) with its optional image
+  service sharp (Apache-2.0, with libvips under LGPL-3.0-or-later),
+  @astrojs/check (MIT), @lazurio/module-kit (MIT), TypeScript (Apache-2.0),
+  Biome (MIT OR Apache-2.0) and @types/bun (MIT). The static build contains
+  the pages, the design system's stylesheet with the website's own, the
+  design system's menu script and the images of data/v2/<language>/media/
+  converted by sharp.

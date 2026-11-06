@@ -1,0 +1,35 @@
+---
+// The services as the design system's cards: a card per service, its title a
+// link to the service's page, the price in the card's footer.
+import Card from "@design-system/components/ui/Card.astro";
+import type { Site } from "../lib/site";
+
+interface Props {
+  site: Site;
+  services: Site["services"];
+}
+
+const { site, services } = Astro.props;
+const t = site.texts;
+---
+
+{
+  services.length === 0 ? (
+    <p class="site-quiet">{t.noServices}</p>
+  ) : (
+    <ul class="site-grid" role="list">
+      {services.map(({ entry, path }) => (
+        <li>
+          <Card title={entry.data.title} href={path}>
+            <p>{entry.data.summary}</p>
+            {entry.data.price && (
+              <Fragment slot="footer">
+                {t.price}: {entry.data.price}
+              </Fragment>
+            )}
+          </Card>
+        </li>
+      ))}
+    </ul>
+  )
+}

@@ -1,0 +1,60 @@
+---
+// The header: the wordmark and the main menu, which collapses behind the
+// design system's "Menu" button below its tablet breakpoint (its
+// content/patterns/navigation.md, MenuToggle and `.collapsible`).
+import Icon from "@design-system/components/ui/Icon.astro";
+import MenuToggle from "@design-system/layouts/MenuToggle.astro";
+import type { Site } from "../lib/site";
+
+interface Props {
+  site: Site;
+  path: string;
+}
+
+const { site, path } = Astro.props;
+const t = site.texts;
+// The current page is marked for assistive technology; a page below a menu
+// item (a service, a news item) marks that item visually only.
+const state = (item: string) =>
+  item === path ? "page" : item !== "/" && path.startsWith(item) ? "section" : null;
+---
+
+<header class="site-header">
+  <div class="site-container site-header-inner">
+    <a class="wordmark" href="/" aria-label={t.homeLink(site.settings.name)}>
+      {site.settings.name}<span class="signal-dot" aria-hidden="true"></span>
+    </a>
+    {
+      site.mainMenu.length > 0 && (
+        <>
+          <button
+            type="button"
+            class="btn btn-ghost btn-compact menu-button"
+            aria-expanded="false"
+            aria-controls="site-navigation"
+            data-menu-toggle
+          >
+            <Icon name="list" size="md" />
+            {t.menu}
+          </button>
+          <nav id="site-navigation" class="site-nav collapsible" aria-label={t.mainNavigation}>
+            <ul>
+              {site.mainMenu.map((item) => (
+                <li>
+                  <a
+                    href={item.path}
+                    class:list={[state(item.path) === "section" && "active"]}
+                    aria-current={state(item.path) === "page" ? "page" : undefined}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <MenuToggle />
+        </>
+      )
+    }
+  </div>
+</header>
