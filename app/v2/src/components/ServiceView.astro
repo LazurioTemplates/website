@@ -1,0 +1,46 @@
+---
+import { render } from "astro:content";
+import type { Site } from "../lib/site";
+import Breadcrumbs from "./Breadcrumbs.astro";
+import CallToAction from "./CallToAction.astro";
+import ContentImage from "./ContentImage.astro";
+
+interface Props {
+  site: Site;
+  entry: Site["services"][number]["entry"];
+  list: Site["home"];
+}
+
+const { site, entry, list } = Astro.props;
+const { data } = entry;
+const t = site.texts;
+const { Content } = await render(entry);
+const cta = site.settings.callToAction;
+---
+
+<div class="site-container">
+  <Breadcrumbs
+    site={site}
+    items={[
+      { label: t.home, path: "/" },
+      { label: list.data.title, path: site.lists.services?.path ?? "/" },
+    ]}
+    current={data.title}
+  />
+  <header class="site-page-header">
+    <h1>{data.title}</h1>
+    <p class="lead">{data.summary}</p>
+    {
+      data.price && (
+        <p class="site-price">
+          {t.price}: {data.price}
+        </p>
+      )
+    }
+  </header>
+  {data.image && data.imageAlt && <ContentImage src={data.image} alt={data.imageAlt} />}
+  <div class="prose">
+    <Content />
+  </div>
+  {cta && <CallToAction cta={cta} />}
+</div>

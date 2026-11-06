@@ -1,0 +1,5 @@
+# The language of the website: cs or en. The website is built from
+# data/v2/<language>/ and its interface speaks this language. Without this
+# file the website is Czech. Set it to the Organization's language when the
+# template is adopted (docs/adoption.md).
+language: cs
