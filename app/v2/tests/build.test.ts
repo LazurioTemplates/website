@@ -2,6 +2,8 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import {
   cpSync,
   existsSync,
+  mkdirSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
