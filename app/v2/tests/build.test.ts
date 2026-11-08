@@ -121,7 +121,12 @@ describe("build contract", () => {
   test(
     "the build stops on a broken rule of the content, such as an image without its alternative text",
     () => {
-      const dir = join(copies, "broken-content");
+      // Beside the App, as content always is: on Windows Astro cannot resolve
+      // the images of content on another drive than the App (a temporary
+      // directory on C: while the checkout is on D:).
+      const cache = join(app, "node_modules", ".cache");
+      mkdirSync(cache, { recursive: true });
+      const dir = mkdtempSync(join(cache, "website-broken-content-"));
       cpSync(fixture, dir, { recursive: true });
       const page = join(dir, "cs/pages/index.md");
       writeFileSync(
@@ -130,6 +135,7 @@ describe("build contract", () => {
       );
       const run = runBuild({ WEBSITE_DATA: dir });
       expect(run.exitCode).not.toBe(0);
+      rmSync(dir, { recursive: true, force: true });
       expect(`${run.stdout}${run.stderr}`).toContain(
         "pages/index.md: the image ../media/share.png has no alternative text",
       );
