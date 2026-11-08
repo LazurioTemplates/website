@@ -1,0 +1,13 @@
+name: Fixture
+legalName: Fixture s.r.o.
+url: https://www.example.org
+locale: cs_CZ
+description: Malý vymyšlený web pro testy šablony. Má stránku pro každý seznam a jeden koncept aktuality.
+shareImage: ./media/share.png
+shareImageAlt: Zkušební obrázek pro náhled odkazu.
+indexing: false
+callToAction:
+  title: Ozvěte se nám
+  action:
+    label: Kontakt
+    href: /kontakt/

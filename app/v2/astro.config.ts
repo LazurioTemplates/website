@@ -1,4 +1,6 @@
-import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
+import { join, resolve, sep } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { astroServerOptions, ModuleKitError, onShutdown } from "@lazurio/module-kit";
 import { defineConfig } from "astro/config";
 import { readLanguage } from "./src/content/language";
@@ -26,16 +28,21 @@ if (serving) onShutdown(() => undefined);
 // The content lies beside the App in data/v2/<language>/ (App generation
 // app/v2), and the look comes from the design system merged into
 // design-system/ (docs/extending.md). The development server may read both.
-const data = fileURLToPath(new URL("../../data/v2/", import.meta.url));
+// WEBSITE_DATA points the build at another content directory of the same
+// shape; the tests build their fixtures with it, and Lazurio never sets it.
+const data = process.env.WEBSITE_DATA
+  ? resolve(process.env.WEBSITE_DATA)
+  : fileURLToPath(new URL("../../data/v2/", import.meta.url));
 const designSystem = fileURLToPath(new URL("../../design-system/", import.meta.url));
 const language = readLanguage(data);
+const content = pathToFileURL(join(data, language) + sep).href;
 
 export default defineConfig({
   ...(serving ? { server: listenerServer() } : {}),
-  // A cache of its own for each language: a change of the language changes
-  // the configuration, so Astro clears the content store instead of mixing
-  // the entries of two languages.
-  cacheDir: `./node_modules/.astro/website-${language}/`,
+  // A cache of its own for each content directory (each language, each test
+  // fixture): another directory changes the configuration, so Astro clears
+  // the content store instead of mixing the entries of two.
+  cacheDir: `./node_modules/.astro/website-${createHash("sha256").update(content).digest("hex").slice(0, 12)}/`,
   // Every page is a directory with index.html, and every link ends with "/":
   // the address a static server answers without a redirect.
   trailingSlash: "always",
@@ -50,7 +57,10 @@ export default defineConfig({
     // the design system's in design-system/, whose tsconfig.json extends a
     // package installed only in the design system's own App.
     tsconfig: "./tsconfig.json",
-    define: { __WEBSITE_LANGUAGE__: JSON.stringify(language) },
+    define: {
+      __WEBSITE_LANGUAGE__: JSON.stringify(language),
+      __WEBSITE_CONTENT__: JSON.stringify(content),
+    },
     server: { strictPort: true, fs: { allow: [".", data, designSystem] } },
     preview: { strictPort: true },
   },

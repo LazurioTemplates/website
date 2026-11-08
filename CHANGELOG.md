@@ -44,12 +44,17 @@ Lazurio: App generation `app/v2` on the stack profile `content@2026.11`
   `data/v2/README.md`; five screens for the Marketplace card in each language,
   `docs/screenshots/cs/` and `docs/screenshots/en/`.
 - Tests: the start and build contracts of the Lazurio Module Standard, the
-  content contract, the site model, SEO, accessibility and one language per
-  page of every built page in both languages, contrast, styles from tokens
-  only, the merged design system, paths that check out on Windows, the skills
-  and the template contract. CI runs `bun run check` on Linux for every pull
+  content contract on a stable fixture (`app/v2/tests/fixtures/content/`), the
+  site model, the build of each kept language with exactly the published pages
+  and their SEO, accessibility and words of one language, drafts and empty
+  lists, contrast, styles from tokens only, the merged design system, paths
+  that check out on Windows, the skills and the module's files. The template's
+  own contract and an adoption in each language (`app/v2/tests/template/`)
+  skip in an adopted module. CI runs `bun run check` on Linux for every pull
   request and on Windows for pull requests that change the App, the content
   or a workflow.
+- `bun run build` stops on the same content rules as `validate:data` in the
+  language it builds, the alternative text of every image included.
 
 ### For adopted modules
 

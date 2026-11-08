@@ -13,7 +13,7 @@ import {
 // the website's language (astro.config.ts, src/content/language.ts) and check each file
 // against its schema in src/content/schemas.ts; data/v2/README.md describes
 // them.
-const DATA = `../../data/v2/${__WEBSITE_LANGUAGE__}`;
+const DATA = new URL(__WEBSITE_CONTENT__);
 // The id of a Markdown entry is its path without `.md`, exactly as written,
 // so that the address of a page is its file name.
 const byPath = ({ entry }: { entry: string }) => entry.replace(/\.md$/, "");
@@ -29,17 +29,17 @@ const contacts = defineCollection({
 });
 
 const pages = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: `${DATA}/pages`, generateId: byPath }),
+  loader: glob({ pattern: "**/*.md", base: new URL("pages/", DATA), generateId: byPath }),
   schema: ({ image }) => pageSchema(image()),
 });
 
 const services = defineCollection({
-  loader: glob({ pattern: "*.md", base: `${DATA}/services`, generateId: byPath }),
+  loader: glob({ pattern: "*.md", base: new URL("services/", DATA), generateId: byPath }),
   schema: ({ image }) => serviceSchema(image()),
 });
 
 const news = defineCollection({
-  loader: glob({ pattern: "*.md", base: `${DATA}/news`, generateId: byPath }),
+  loader: glob({ pattern: "*.md", base: new URL("news/", DATA), generateId: byPath }),
   schema: ({ image }) => newsSchema(image()),
 });
 

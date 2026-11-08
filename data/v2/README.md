@@ -5,8 +5,9 @@ Markdown and YAML. People and agents change the website by changing these
 files; the code only renders them. The App checks every file against its
 schema (`app/v2/src/content/schemas.ts`) and the rules of the whole website
 (`app/v2/src/content/model.ts`): `bun run validate:data` in `app/v2` reports
-each problem with its file and field, and the build stops on the same
-problems. A misspelt field name is an error, not something silently ignored.
+each problem with its file and field, and `bun run build` stops on the same
+problems in the language it builds, so Lazurio and a hosting never publish
+them. A misspelt field name is an error, not something silently ignored.
 
 The content of the template describes Example, an invented company. Nothing
 in it is a real company, person, price or result.

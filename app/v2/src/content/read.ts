@@ -8,6 +8,7 @@ import {
   type NewsEntry,
   type PageEntry,
   type ServiceEntry,
+  type SiteModel,
 } from "./model";
 import { contactsSchema, newsSchema, pageSchema, serviceSchema, siteSchema } from "./schemas";
 
@@ -60,12 +61,24 @@ export function checkContent(data: string): string[] {
       problems.push(`data/v2/${name}/ is not a language of the website (${LANGUAGES.join(", ")})`);
     }
   }
-  for (const lang of present) problems.push(...checkLanguage(join(data, lang), lang));
+  for (const lang of present) problems.push(...checkLanguage(join(data, lang), lang).problems);
   return problems;
 }
 
-function checkLanguage(root: string, language: Language): string[] {
+export type CheckedLanguage = {
+  problems: string[];
+  site: SiteModel<PageEntry, ServiceEntry, NewsEntry> | null;
+};
+
+// The content of one language directory, checked, and its site model when it
+// has no problem: the addresses the build writes (tests/build.test.ts).
+export function readLanguageSite(data: string, language: Language): CheckedLanguage {
+  return checkLanguage(join(data, language), language);
+}
+
+function checkLanguage(root: string, language: Language): CheckedLanguage {
   const problems: string[] = [];
+  let site: CheckedLanguage["site"] = null;
   const name = (path: string) => `${language}/${posix(relative(root, path))}`;
 
   function parse<S extends z.ZodType>(file: string, schema: S, yaml: string): z.output<S> | null {
@@ -97,9 +110,10 @@ function checkLanguage(root: string, language: Language): string[] {
     }
   }
 
+  // That the images of a text exist; their alternative text is a rule of the
+  // site model, which the build checks too.
   function checkBodyImages(file: string, body: string) {
-    for (const [, alt, src] of body.matchAll(/!\[([^\]]*)\]\(([^)\s]+)/g)) {
-      if (!alt?.trim()) problems.push(`${name(file)}: the image ${src} has no alternative text`);
+    for (const [, , src] of body.matchAll(/!\[([^\]]*)\]\(([^)\s]+)/g)) {
       if (src && !/^[a-z]+:/.test(src) && !src.startsWith("/")) checkImage(file, src);
     }
   }
@@ -147,7 +161,7 @@ function checkLanguage(root: string, language: Language): string[] {
   // each file is right, so that one mistake is not reported twice.
   if (problems.length === 0 && settings && contacts) {
     try {
-      buildSite({
+      site = buildSite({
         language,
         settings,
         contacts,
@@ -160,5 +174,5 @@ function checkLanguage(root: string, language: Language): string[] {
       problems.push(...error.problems.map((problem) => `${language}/${problem}`));
     }
   }
-  return problems;
+  return { problems, site };
 }

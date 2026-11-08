@@ -215,9 +215,16 @@ In the module's task worktree:
 ```sh
 cd app/v2
 bun install --frozen-lockfile
-bun run check      # astro check, Biome, the content and every test, the build included
+bun run check      # astro check, Biome, the content and every test, the build of the kept language included
 git merge-base --is-ancestor <commit> HEAD && echo ancestor
 ```
+
+The tests of `app/v2/tests/template/` check the template itself and skip once
+`lazurio.module.json` names the Organization; every other test holds the
+module with its identity, its one language and its own content, empty lists
+included. The template runs this adoption for both languages in its own CI
+(`tests/template/adoption.test.ts`), so a failure here is in the module's
+changes, not in the template.
 
 Look at the website in the browser as `AGENTS.md` describes (build, preview on
 a free port, 1280 and 390 px) and put screenshots into the pull request. Open

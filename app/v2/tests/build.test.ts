@@ -1,29 +1,40 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { cpSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, relative } from "node:path";
 import packageJson from "../package.json";
 import { LANGUAGES, type Language, readLanguage } from "../src/content/language";
+import { readLanguageSite } from "../src/content/read";
 import { texts } from "../src/lib/texts";
-import { app, data, tempDir } from "./support";
+import { app, data, fixture, tempDir } from "./support";
 
 // The build contract of the Lazurio Module Standard (The built version from
 // `main`): the Launchpad runs `build_script` with only bun on PATH,
 // `NODE_ENV=production` and no listener, then serves `build_output` with its
 // own static server; the health path must resolve to a file directly. And
-// what a website owes its readers and search engines on every page, in each
-// language of the template: one h1, a title and description, a canonical
-// address, link previews, images with alternative text, landmarks, links that
-// lead somewhere, no request to another origin, little JavaScript, and the
-// words of one language only.
+// what a website owes its readers and search engines on every page of every
+// language the module keeps: exactly the pages its content publishes (no
+// draft), one h1, a title and description, a canonical address, link
+// previews, images with alternative text, landmarks, links that lead
+// somewhere, no request to another origin, little JavaScript and the words of
+// one language. The build itself stops on a broken rule of the content.
 const runtime = packageJson.lazurio.runtime;
 const [entrypoint] = runtime.listeners;
 if (!entrypoint) throw new Error("lazurio.runtime declares no listener");
 const output = join(app, runtime.build_output);
-const buildTimeoutMs = 240_000;
+const buildTimeoutMs = 300_000;
 const configured = readLanguage(data, "");
+// The languages whose content the module keeps (an adopted module keeps one).
+const kept = LANGUAGES.filter((language) => existsSync(join(data, language)));
 
 type Built = { dir: string; pages: { address: string; html: string }[] };
-const builds = new Map<Language, Built>();
 const copies = tempDir("build");
 
 function files(dir: string, suffix: string): string[] {
@@ -37,26 +48,30 @@ const isFile = (path: string) => statSync(path, { throwIfNoEntry: false })?.isFi
 const posix = (path: string) => path.split("\\").join("/");
 const attr = (html: string, pattern: RegExp) => pattern.exec(html)?.[1];
 
-// The build exactly as the Launchpad runs it; the language comes from
-// data/v2/language.yaml, or for the other language from WEBSITE_LANGUAGE.
-function build(language: Language): Built {
+// The build exactly as the Launchpad runs it. WEBSITE_LANGUAGE builds a kept
+// language other than the configured one, WEBSITE_DATA a test fixture;
+// Lazurio sets neither.
+function runBuild(extra: Record<string, string>) {
   rmSync(output, { recursive: true, force: true });
-  const env: Record<string, string> = {
-    HOME: process.env.HOME ?? "",
-    PATH: dirname(process.execPath),
-    NODE_ENV: "production",
-  };
-  if (language !== configured) env.WEBSITE_LANGUAGE = language;
-  const run = Bun.spawnSync([process.execPath, "--no-env-file", "run", runtime.build_script], {
+  return Bun.spawnSync([process.execPath, "--no-env-file", "run", runtime.build_script], {
     cwd: app,
-    env,
+    env: {
+      HOME: process.env.HOME ?? "",
+      PATH: dirname(process.execPath),
+      NODE_ENV: "production",
+      ...extra,
+    },
     stdout: "pipe",
     stderr: "pipe",
   });
+}
+
+function build(name: string, extra: Record<string, string>): Built {
+  const run = runBuild(extra);
   if (run.exitCode !== 0) {
-    throw new Error(`the ${language} build failed:\n${run.stdout}\n${run.stderr}`);
+    throw new Error(`the ${name} build failed:\n${run.stdout}\n${run.stderr}`);
   }
-  const dir = join(copies, language);
+  const dir = join(copies, name);
   cpSync(output, dir, { recursive: true });
   const pages = files(dir, ".html")
     .filter((file) => !file.endsWith("404.html"))
@@ -67,21 +82,33 @@ function build(language: Language): Built {
   return { dir, pages };
 }
 
+// The addresses the content publishes, from the same site model the build uses.
+function published(dataDir: string, language: Language): string[] {
+  const { problems, site } = readLanguageSite(dataDir, language);
+  if (!site) throw new Error(`the content of ${language} has problems:\n${problems.join("\n")}`);
+  return site.routes.map((route) => route.path).sort();
+}
+
+const builds = new Map<string, Built>();
 beforeAll(() => {
+  builds.set("fixture", build("fixture", { WEBSITE_DATA: fixture }));
   // The configured language last, so that dist/ is what Lazurio would serve.
-  for (const language of [...LANGUAGES.filter((l) => l !== configured), configured]) {
-    builds.set(language, build(language));
+  for (const language of [...kept.filter((l) => l !== configured), configured]) {
+    builds.set(
+      language,
+      build(language, language === configured ? {} : { WEBSITE_LANGUAGE: language }),
+    );
   }
 }, buildTimeoutMs);
 afterAll(() => rmSync(copies, { recursive: true, force: true }));
 
 describe("build contract", () => {
-  test("the health path is a file of the output", () => {
+  test("the build is declared, and the health path is a file of the output", () => {
+    expect(runtime.build_script).toBe("build");
+    expect(runtime.build_output).toBe("dist");
     const path = entrypoint.health.path;
     const candidates = path.endsWith("/") ? [`${path}index.html`] : [path, `${path}.html`];
     expect(candidates.some((file) => isFile(join(output, file)))).toBe(true);
-    expect(runtime.build_script).toBe("build");
-    expect(runtime.build_output).toBe("dist");
   });
 
   test("the static fallback has its 404 page", () => {
@@ -90,9 +117,52 @@ describe("build contract", () => {
     expect(html).toContain('content="noindex, nofollow"');
     expect(html).not.toContain('rel="canonical"');
   });
+
+  test(
+    "the build stops on a broken rule of the content, such as an image without its alternative text",
+    () => {
+      const dir = join(copies, "broken-content");
+      cpSync(fixture, dir, { recursive: true });
+      const page = join(dir, "cs/pages/index.md");
+      writeFileSync(
+        page,
+        readFileSync(page, "utf8").replace("Text úvodní", "![](../media/share.png)\n\nText úvodní"),
+      );
+      const run = runBuild({ WEBSITE_DATA: dir });
+      expect(run.exitCode).not.toBe(0);
+      expect(`${run.stdout}${run.stderr}`).toContain(
+        "pages/index.md: the image ../media/share.png has no alternative text",
+      );
+    },
+    buildTimeoutMs,
+  );
 });
 
-for (const language of LANGUAGES) {
+describe("drafts and empty lists (the test fixture)", () => {
+  const built = () => builds.get("fixture") as Built;
+  const words = texts.cs;
+
+  test("the build has exactly the published pages: no draft", () => {
+    expect(
+      built()
+        .pages.map((p) => p.address)
+        .sort(),
+    ).toEqual(published(fixture, "cs"));
+    expect(existsSync(join(built().dir, "aktuality/koncept"))).toBe(false);
+    const sitemap = readFileSync(join(built().dir, "sitemap.xml"), "utf8");
+    expect(sitemap).not.toContain("koncept");
+  });
+
+  test("an empty list says so", () => {
+    const html = (address: string) => built().pages.find((p) => p.address === address)?.html ?? "";
+    expect(html("/sluzby/")).toContain(words.noServices);
+    expect(html("/aktuality/")).toContain(words.noNews);
+    expect(html("/")).not.toContain(words.servicesHeading);
+    expect(html("/")).not.toContain(words.allNews);
+  });
+});
+
+for (const language of kept) {
   const site = Bun.YAML.parse(readFileSync(join(data, language, "site.yaml"), "utf8")) as {
     url: string;
     indexing: boolean;
@@ -114,13 +184,12 @@ for (const language of LANGUAGES) {
   };
 
   describe(`every page in ${language}`, () => {
-    test("every page, service and news item of the language is built", () => {
-      const markdown = (sub: string) =>
-        readdirSync(join(data, language, sub), { recursive: true }).filter((name) =>
-          String(name).endsWith(".md"),
-        ).length;
-      const expected = markdown("pages") + markdown("services") + markdown("news");
-      expect(built().pages.length).toBe(expected);
+    test("the build has exactly the pages the content publishes", () => {
+      expect(
+        built()
+          .pages.map((p) => p.address)
+          .sort(),
+      ).toEqual(published(data, language));
     });
 
     test("has its language, one h1, a unique title and a description", () => {
@@ -171,11 +240,11 @@ for (const language of LANGUAGES) {
         expect(html, address).toMatch(/<main id="content"/);
         expect(html, address).toMatch(/<header class="site-header"/);
         expect(html, address).toMatch(/<footer class="site-footer"/);
-        expect(html, address).toContain(`aria-label="${words.mainNavigation}"`);
         // A page of the main menu is marked as the current one, and only it.
         const current = attr(html, /<a href="([^"]+)"[^>]*aria-current="page"/);
         if (current !== undefined) expect(current, address).toBe(address);
         const menu = /<nav id="site-navigation"[\s\S]*?<\/nav>/.exec(html)?.[0] ?? "";
+        if (menu !== "") expect(menu, address).toContain(`aria-label="${words.mainNavigation}"`);
         if (menu.includes(`href="${address}"`)) {
           expect(menu, address).toMatch(new RegExp(`<a href="${address}"[^>]*aria-current="page"`));
         }
@@ -185,7 +254,7 @@ for (const language of LANGUAGES) {
     test("describes every image and declares its size", () => {
       for (const { address, html } of built().pages) {
         for (const [img] of html.matchAll(/<img\b[^>]*>/g)) {
-          expect(img, address).toMatch(/\salt="[^"]+"/);
+          expect(img, address).toMatch(/\salt="[^"]*\S[^"]*"/);
           expect(img, address).toMatch(/\swidth="\d+"/);
           expect(img, address).toMatch(/\sheight="\d+"/);
         }

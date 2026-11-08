@@ -11,11 +11,11 @@ import {
 } from "./schemas";
 
 // The website as a whole: which page lives at which address, what the menus
-// hold, which services and news are shown, and the rules that no single file
-// can check by itself (one home page, one page per list, unique addresses,
-// links that lead somewhere). Astro builds the pages from this model
-// (src/lib/site.ts) and `bun run validate:data` checks the same model, so a
-// broken rule stops both.
+// hold, which services and news are shown, and the rules that a schema of one
+// file cannot hold (one home page, one page per list, unique addresses, links
+// that lead somewhere, images in the text with their alternative text). Astro
+// builds the pages from this model (src/lib/site.ts), so `bun run build`
+// stops on a broken rule, and `bun run validate:data` checks the same model.
 
 export type Entry<D> = { id: string; data: D; body?: string | undefined };
 export type PageEntry = Entry<PageData<unknown>>;
@@ -182,6 +182,15 @@ export function buildSite<P extends PageEntry, S extends ServiceEntry, N extends
     if (!item.data.draft) checkBody(`news/${item.id}.md`, item.body);
   }
 
+  // Every image in a text says what it shows, for people who do not see it.
+  for (const [where, body] of [
+    ...input.pages.map((page) => [`pages/${page.id}.md`, page.body] as const),
+    ...input.services.map((service) => [`services/${service.id}.md`, service.body] as const),
+    ...input.news.map((item) => [`news/${item.id}.md`, item.body] as const),
+  ]) {
+    problems.push(...imageProblems(body ?? "").map((problem) => `${where}: ${problem}`));
+  }
+
   if (problems.length > 0 || !home) throw new ContentError(problems);
 
   const menu = (where: "main" | "footer"): MenuItem[] =>
@@ -200,6 +209,20 @@ export function buildSite<P extends PageEntry, S extends ServiceEntry, N extends
     mainMenu: menu("main"),
     footerMenu: menu("footer"),
   };
+}
+
+// Images of a Markdown body without their alternative text: ![](file) and
+// an <img> without a non-empty alt.
+export function imageProblems(markdown: string): string[] {
+  const problems: string[] = [];
+  for (const [, alt, src] of markdown.matchAll(/!\[([^\]]*)\]\(([^)\s]+)/g)) {
+    if (!alt?.trim()) problems.push(`the image ${src} has no alternative text`);
+  }
+  for (const [tag] of markdown.matchAll(/<img\b[^>]*>/gi)) {
+    if (!/\salt="[^"]*\S[^"]*"/i.test(tag))
+      problems.push(`the image ${tag} has no alternative text`);
+  }
+  return problems;
 }
 
 // The site-relative links of a Markdown body: [text](/path/) and href="/path/".

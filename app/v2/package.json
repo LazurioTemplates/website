@@ -14,7 +14,6 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "validate:data": "bun run src/validate-data.ts",
-    "design-system:sync": "bun run src/design-system/sync.ts",
     "check": "bun run typecheck && bun run lint && bun run validate:data && bun run test",
     "test": "bun test"
   },

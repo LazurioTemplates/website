@@ -31,7 +31,7 @@ knowledge base):
 | `@lazurio/module-kit` | 0.2.0 | Listener, shutdown and development server options |
 
 Every dependency is pinned exactly (no `^` or `~`) and `bun.lock` is
-committed; the template test fails on a range. As the profile asks, Biome
+committed; the module test fails on a range. As the profile asks, Biome
 lints and formats the TypeScript, JSON and CSS of the App, leaves `.astro`
 files out, and keeps its Markdown and YAML formatters off. The images of the
 content are converted by sharp, the optional image service Astro installs
@@ -64,18 +64,21 @@ Before the pull request run, in `app/v2`:
 
 ```sh
 bun install --frozen-lockfile
-bun run check      # astro check, Biome, the content and every test, both languages' builds included
+bun run check      # astro check, Biome, the content and every test, the build of each kept language included
 ```
 
-The tests hold the website's rules: the content of both languages against its
-schemas and rules, the addresses, menus and lists of the site model, SEO and
-accessibility of every built page in both languages (one h1, titles,
-descriptions, canonical addresses, link previews, alternative texts,
-landmarks, links that lead somewhere, no other origin, little JavaScript, the
-words of one language), contrast of the colours the website uses, styles from
+The tests hold the website's rules, whatever the module's content is: the
+build of each kept language has exactly the pages its content publishes
+(drafts and empty lists included, also on the stable fixture
+`app/v2/tests/fixtures/content/`) with one h1, titles, descriptions, canonical
+addresses, link previews, alternative texts, landmarks, links that lead
+somewhere, no other origin, little JavaScript and the words of one language;
+every kind of content mistake on copies of the fixture; the build stopping on
+a broken content rule; contrast of the colours the website uses, styles from
 tokens only, the merged design system, paths that check out on Windows, the
 skills, the start and build contracts of the Lazurio Module Standard and the
-template contract.
+module's files. `app/v2/tests/template/` adds the template's own contract and
+an adoption in each language; it skips in an adopted module.
 
 ## Languages
 
@@ -194,7 +197,9 @@ same way, as a release of this template that names it.
 
 Before a release:
 
-1. Update `CHANGELOG.md` and `version` in `app/v2/package.json`.
+1. Update `CHANGELOG.md` and `version` in `app/v2/package.json`. Keep
+   `app/v2/tests/template/adoption.test.ts` true to `docs/adoption.md`: it is
+   the proof that an adopted module passes its check.
 2. Refresh the screens in `docs/screenshots/cs/` and `docs/screenshots/en/`
    (the same file names in both) when the website looks different: WebP,
    1600 px wide, taken from the static build at twice the pixel density of a

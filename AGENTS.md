@@ -43,7 +43,8 @@ search for it: `grep -rn "<a few words>" data/v2/<language> app/v2/src/lib/texts
 - A new interface word goes into `app/v2/src/lib/texts.ts` in both languages;
   the build test fails when a page shows a word of the other language.
 - `WEBSITE_LANGUAGE=en` (or `cs`) builds the other language for a preview or
-  a test. Lazurio never sets it.
+  a test, and `WEBSITE_DATA` builds another content directory (the tests build
+  their fixture with it). Lazurio never sets either.
 
 ## Rules for the content
 
@@ -176,12 +177,33 @@ stay publishable:
 | A change of tools, a design system release, a generation change, a release or a template update | `docs/extending.md`, `CHANGELOG.md` |
 | Putting the website on the internet | `docs/publishing.md` |
 
+## Tests
+
+- `bun run check` is the module's one gate: the type check, Biome,
+  `validate:data` (the content of every language kept in `data/v2/`) and the
+  tests in `app/v2/tests/`. They hold the module whatever its content is: the
+  build of each kept language has exactly the pages its content publishes,
+  and their SEO, accessibility and words of one language; the content rules,
+  on copies of the stable fixture in `app/v2/tests/fixtures/content/`; the
+  start and build contracts; tokens, styles, the design system, paths, skills
+  and the module's files.
+- `bun run build` stops on the same rules of the content as `validate:data`
+  in the language it builds: the schemas, the site model and the alternative
+  text of every image. Lazurio and a hosting run the build, so a broken rule
+  never reaches the website.
+- `app/v2/tests/template/` checks the template itself: its placeholders, both
+  languages, the screens, and an adoption by `docs/adoption.md` in each
+  language, whose own `bun run check` must pass. It skips once
+  `lazurio.module.json` names an Organization, so an adopted module keeps it
+  as it came, and later releases of the template merge into it without
+  conflicts.
+
 ## Verification before a pull request
 
 ```sh
 cd app/v2
 bun install --frozen-lockfile
-bun run check      # astro check, Biome, the content of data/v2 and every test, both languages' builds included
+bun run check      # astro check, Biome, the content of data/v2 and every test, the build of each kept language included
 lazurio module setup <path to the module> --root <Lazurio Folder> --json
 ```
 

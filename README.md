@@ -108,7 +108,7 @@ cd app/v2
 bun install --frozen-lockfile
 bun run prepare:app     # astro sync
 bun run validate:data   # the content of data/v2 only
-bun run check           # astro check, Biome, the content and every test, both languages' builds included
+bun run check           # astro check, Biome, the content and every test, the build of each kept language included
 bun run build           # the static website in dist/, in the language of data/v2/language.yaml
 ```
 
