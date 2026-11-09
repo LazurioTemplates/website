@@ -107,34 +107,37 @@ hosting serve, so check the build before the pull request.
 
 ## Design system
 
-The website takes its look from the design system as the design system's own
-`docs/adoption.md` asks: a release merged so that its commit stays an
-ancestor, never a copy of its files.
+The website takes its look from the design system as a package: the
+dependency `design-system` in `app/v2/package.json`, a Git dependency on a
+released tag (today `github:LazurioTemplates/design-system#v2.0.0`), locked in
+`bun.lock` with its commit and checksum (Lazurio Module Standard: a design
+system's assets come as a dependency on its package, never by a relative
+path).
 
-- `design-system/` is that release (today `LazurioTemplates/design-system`
-  v1.0.0), merged into its own directory because the root belongs to the
-  website. `design-system.lock.json` names its repository, tag, commit and
-  tree. Never edit a file in `design-system/`: the test compares the
-  directory with the release's tree. A missing colour, size, component or
-  rule is proposed to the design system itself.
-- The website uses the design system directly, never a copy: its tokens
-  (`@design-system/tokens`), its stylesheet (`@design-system/styles/global.css`)
-  and its components (`Button`, `Card`, `Icon`, `MenuToggle`). The alias
-  `@design-system/*` is `design-system/app/v1/src/*` (`app/v2/tsconfig.json`).
-- `app/v2/src/styles/site.css` is the website's own layout on the tokens; its
-  classes start with `site-`. Name tokens (`var(--text-muted)`,
-  `var(--space-4)`); the tests refuse a literal colour and a px value outside
-  the website's own geometry block.
-- A newer release of the design system, or the Organization's own design
-  system in place of the template's, arrives as a merge into `design-system/`
-  (`docs/extending.md`). That is how the brand of the website changes.
+- Import it by its package name only: `import "design-system/styles.css";`
+  once in `app/v2/src/layouts/Base.astro` (tokens, the brand's fonts, base
+  styles and every component), components one by one from
+  `design-system/astro/<Name>.astro` (a single import from
+  `design-system/astro` would put every component's script on every page),
+  tokens from `design-system/tokens`, the brand from `design-system/brand`,
+  helpers from `design-system`. Never a path into `node_modules`, a copy of
+  its files or a branch.
+- Use its components (`Button`, `Card`, `Nav`, `Breadcrumbs`, `Logo`, `Icon`)
+  and its type roles (`ds-type-*`, `ds-prose`) before writing anything of
+  your own. `app/v2/src/styles/site.css` only lays the pages out, with the
+  `--ds-*` tokens; its classes start with `site-`. The tests refuse a literal
+  colour, another custom property and a px value outside the website's own
+  geometry block. A missing colour, size, component or rule is proposed to
+  the design system itself.
+- A newer release, or the Organization's own design system in place of the
+  template's, is a change of that one dependency line, `bun install` and a
+  pull request (`docs/extending.md`). That is how the brand of the website
+  changes.
 
 ## Lazurio Module Standard
 
 - One repository is one module; the App lives in `app/v2/`, its content in
-  `data/v2/`. `design-system/` is the merged design system release; its own
-  manifest and App package are part of that release, not Apps of this module,
-  and Lazurio does not read them.
+  `data/v2/`; the design system is a dependency of the App.
 - `dev` starts one Astro server; `prepare:app` (`astro sync`) is the
   preparation and `check:prepared` checks it.
 - Opened from `main`, the App runs as its static build (`build_output:
@@ -145,8 +148,8 @@ ancestor, never a copy of its files.
   `LAZURIO_RUNTIME_LISTENER_APP_HOST` and `_PORT` through `@lazurio/module-kit`
   and exits with code 2 without them. The port lives only in
   `lazurio.module.json`.
-- No `.env*` files, secrets or imports from outside this repository
-  (`design-system/` is part of it).
+- No `.env*` files, secrets or imports from outside this repository and the
+  App's declared dependencies.
 - One change, one worktree, one branch, one pull request; the primary checkout
   stays on `main`.
 
@@ -185,7 +188,7 @@ stay publishable:
   build of each kept language has exactly the pages its content publishes,
   and their SEO, accessibility and words of one language; the content rules,
   on copies of the stable fixture in `app/v2/tests/fixtures/content/`; the
-  start and build contracts; tokens, styles, the design system, paths, skills
+  start and build contracts; contrast, styles, the design system package, paths, skills
   and the module's files.
 - `bun run build` stops on the same rules of the content as `validate:data`
   in the language it builds: the schemas, the site model and the alternative

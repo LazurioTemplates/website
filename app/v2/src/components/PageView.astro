@@ -1,5 +1,5 @@
 ---
-import Button from "@design-system/components/ui/Button.astro";
+import Button from "design-system/astro/Button.astro";
 import { render } from "astro:content";
 import type { Site } from "../lib/site";
 import CallToAction from "./CallToAction.astro";
@@ -30,10 +30,10 @@ const cta = site.settings.callToAction;
 <div class="site-container">
   {
     data.hero ? (
-      <Hero hero={data.hero} />
+      <Hero site={site} hero={data.hero} />
     ) : (
       <header class="site-page-header">
-        <h1>{data.title}</h1>
+        <h1 class="ds-type-display">{data.title}</h1>
       </header>
     )
   }
@@ -56,8 +56,8 @@ const cta = site.settings.callToAction;
       <ul class="site-highlights" role="list">
         {data.highlights.map((item) => (
           <li>
-            <h2>{item.title}</h2>
-            <p>{item.text}</p>
+            <h2 class="ds-type-title">{item.title}</h2>
+            <p class="site-quiet">{item.text}</p>
           </li>
         ))}
       </ul>
@@ -68,7 +68,7 @@ const cta = site.settings.callToAction;
 
   {
     hasBody && (
-      <div class="prose site-section">
+      <div class="ds-prose site-section">
         <Content />
       </div>
     )
@@ -80,7 +80,7 @@ const cta = site.settings.callToAction;
         <h2 id="services-list" class="site-visually-hidden">
           {t.servicesList}
         </h2>
-        <ServiceGrid site={site} services={site.services} />
+        <ServiceGrid site={site} services={site.services} headingLevel={2} />
       </section>
     )
   }
@@ -106,14 +106,14 @@ const cta = site.settings.callToAction;
     home && site.services.length > 0 && (
       <section class="site-section" aria-labelledby="services">
         <div class="site-section-head">
-          <h2 id="services">{t.servicesHeading}</h2>
+          <h2 id="services" class="ds-type-section">{t.servicesHeading}</h2>
           {site.lists.services && (
-            <Button href={site.lists.services.path} variant="ghost">
+            <Button href={site.lists.services.path} variant="quiet" iconEnd="arrow-right" locale={site.language}>
               {t.allServices}
             </Button>
           )}
         </div>
-        <ServiceGrid site={site} services={site.services} />
+        <ServiceGrid site={site} services={site.services} headingLevel={3} />
       </section>
     )
   }
@@ -122,9 +122,9 @@ const cta = site.settings.callToAction;
     home && latest.length > 0 && (
       <section class="site-section" aria-labelledby="news">
         <div class="site-section-head">
-          <h2 id="news">{t.newsHeading}</h2>
+          <h2 id="news" class="ds-type-section">{t.newsHeading}</h2>
           {site.lists.news && (
-            <Button href={site.lists.news.path} variant="ghost">
+            <Button href={site.lists.news.path} variant="quiet" iconEnd="arrow-right" locale={site.language}>
               {t.allNews}
             </Button>
           )}
@@ -134,5 +134,5 @@ const cta = site.settings.callToAction;
     )
   }
 
-  {(home || data.shows === "services") && cta && <CallToAction cta={cta} />}
+  {(home || data.shows === "services") && cta && <CallToAction site={site} cta={cta} />}
 </div>

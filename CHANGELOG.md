@@ -33,11 +33,14 @@ Lazurio: App generation `app/v2` on the stack profile `content@2026.11`
   Organization.
 - Accessibility and speed: landmarks, a skip link, a keyboard menu that
   works without JavaScript, alternative texts, WCAG AA contrast in both
-  themes, static pages, no web fonts and WebP images in several sizes.
-- The look of `LazurioTemplates/design-system` v1.0.0, merged into
-  `design-system/` as its `docs/adoption.md` asks (the release commit stays an
-  ancestor) and recorded in `design-system.lock.json`. The website imports its
-  tokens, stylesheet and components (`@design-system/*`) and keeps no copy.
+  themes, static pages, under 1 kB of JavaScript per page and WebP images in
+  several sizes.
+- The look of `LazurioTemplates/design-system` v2.0.0 as a package: the
+  dependency `"design-system": "github:LazurioTemplates/design-system#v2.0.0"`,
+  locked in `bun.lock`. The website imports its styles and fonts
+  (`design-system/styles.css`), its components (`Button`, `Card`, `Nav`,
+  `Breadcrumbs`, `Logo`) and tokens by the package name and keeps no copy; an
+  Organization's own design system is a change of that dependency.
 - Skills for agents in `.agents/skills/` and `.claude/skills/`: `edit-page`,
   `write-news` and `change-contacts`, each ending with a check in the browser.
 - `docs/adoption.md`, `docs/extending.md`, `docs/publishing.md` and
@@ -47,7 +50,7 @@ Lazurio: App generation `app/v2` on the stack profile `content@2026.11`
   content contract on a stable fixture (`app/v2/tests/fixtures/content/`), the
   site model, the build of each kept language with exactly the published pages
   and their SEO, accessibility and words of one language, drafts and empty
-  lists, contrast, styles from tokens only, the merged design system, paths
+  lists, contrast, styles from tokens only, the design system package, paths
   that check out on Windows, the skills and the module's files. The template's
   own contract and an adoption in each language (`app/v2/tests/template/`)
   skip in an adopted module. CI runs `bun run check` on Linux for every pull

@@ -1,4 +1,5 @@
 ---
+import Card from "design-system/astro/Card.astro";
 import { telHref } from "../lib/format";
 import type { Site } from "../lib/site";
 
@@ -11,49 +12,50 @@ const { contacts } = site;
 const t = site.texts;
 ---
 
-<div class="site-grid">
-  <section class="card" aria-labelledby="contact-address">
-    <h2 id="contact-address" class="site-card-title">{t.address}</h2>
-    <address>
-      {contacts.address.street}<br />
-      {contacts.address.postalCode}&nbsp;{contacts.address.city}<br />
-      {contacts.address.country}
-    </address>
-  </section>
-  <section class="card" aria-labelledby="contact-reach">
-    <h2 id="contact-reach" class="site-card-title">{t.emailAndPhone}</h2>
-    <p><a class="site-break" href={`mailto:${contacts.email}`}>{contacts.email}</a></p>
-    <p><a href={telHref(contacts.phone)}>{contacts.phone}</a></p>
-  </section>
+<ul class="site-grid" role="list">
+  <li>
+    <Card title={t.address} headingLevel={2}>
+      <address>
+        {contacts.address.street}<br />
+        {contacts.address.postalCode}&nbsp;{contacts.address.city}<br />
+        {contacts.address.country}
+      </address>
+    </Card>
+  </li>
+  <li>
+    <Card title={t.emailAndPhone} headingLevel={2}>
+      <p><a class="site-break" href={`mailto:${contacts.email}`}>{contacts.email}</a></p>
+      <p><a href={telHref(contacts.phone)}>{contacts.phone}</a></p>
+    </Card>
+  </li>
   {
     contacts.hours.length > 0 && (
-      <section class="card" aria-labelledby="contact-hours">
-        <h2 id="contact-hours" class="site-card-title">
-          {t.hours}
-        </h2>
-        <dl class="site-pairs">
-          {contacts.hours.map((row) => (
-            <div>
-              <dt>{row.days}</dt>
-              <dd>{row.time}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <li>
+        <Card title={t.hours} headingLevel={2}>
+          <dl class="site-pairs">
+            {contacts.hours.map((row) => (
+              <div>
+                <dt>{row.days}</dt>
+                <dd class="ds-numeric">{row.time}</dd>
+              </div>
+            ))}
+          </dl>
+        </Card>
+      </li>
     )
   }
-</div>
+</ul>
 
 {
   contacts.people.length > 0 && (
-    <section aria-labelledby="contact-people">
-      <h2 id="contact-people">{t.people}</h2>
+    <section class="site-section" aria-labelledby="contact-people">
+      <h2 id="contact-people" class="ds-type-display">
+        {t.people}
+      </h2>
       <ul class="site-grid" role="list">
         {contacts.people.map((person) => (
           <li>
-            <article class="card">
-              <h3 class="site-card-title">{person.name}</h3>
-              <p class="site-quiet">{person.role}</p>
+            <Card title={person.name} description={person.role} headingLevel={3}>
               {person.email && (
                 <p>
                   <a class="site-break" href={`mailto:${person.email}`}>
@@ -66,7 +68,7 @@ const t = site.texts;
                   <a href={telHref(person.phone)}>{person.phone}</a>
                 </p>
               )}
-            </article>
+            </Card>
           </li>
         ))}
       </ul>
@@ -74,11 +76,11 @@ const t = site.texts;
   )
 }
 
-<section aria-labelledby="contact-company">
-  <h2 id="contact-company">{t.companyDetails}</h2>
+<section class="site-section" aria-labelledby="contact-company">
+  <h2 id="contact-company" class="ds-type-display">{t.companyDetails}</h2>
   <dl class="site-pairs site-company">
-    <div><dt>{t.companyId}</dt><dd>{contacts.company.id}</dd></div>
-    {contacts.company.vatId && <div><dt>{t.vatId}</dt><dd>{contacts.company.vatId}</dd></div>}
+    <div><dt>{t.companyId}</dt><dd class="ds-numeric">{contacts.company.id}</dd></div>
+    {contacts.company.vatId && <div><dt>{t.vatId}</dt><dd class="ds-numeric">{contacts.company.vatId}</dd></div>}
   </dl>
   {contacts.company.register && <p class="site-quiet">{contacts.company.register}</p>}
 </section>

@@ -46,7 +46,10 @@ describe("module contract", () => {
       ...packageJson.dependencies,
       ...packageJson.devDependencies,
     }).filter(
-      ([, version]) => !/^(?:\d+\.\d+\.\d+|github:[\w.-]+\/[\w.-]+#v\d+\.\d+\.\d+)$/.test(version),
+      ([, version]) =>
+        !/^(?:\d+\.\d+\.\d+|github:[\w.-]+\/[\w.-]+#v\d+\.\d+\.\d+|git\+ssh:\/\/git@github\.com\/[\w.-]+\/[\w.-]+\.git#v\d+\.\d+\.\d+)$/.test(
+          version,
+        ),
     );
     expect(ranges).toEqual([]);
     for (const script of Object.values(packageJson.scripts)) {

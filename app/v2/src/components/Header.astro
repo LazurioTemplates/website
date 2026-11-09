@@ -1,9 +1,11 @@
 ---
-// The header: the wordmark and the main menu, which collapses behind the
-// design system's "Menu" button below its tablet breakpoint (its
-// content/patterns/navigation.md, MenuToggle and `.collapsible`).
-import Icon from "@design-system/components/ui/Icon.astro";
-import MenuToggle from "@design-system/layouts/MenuToggle.astro";
+// The header: the brand's logo symbol with the website's name, and the main
+// menu as the design system's horizontal navigation. Below the design
+// system's `lg` breakpoint the menu collapses behind a "Menu" button; without
+// JavaScript it stays open (site.css).
+import Button from "design-system/astro/Button.astro";
+import Logo from "design-system/astro/Logo.astro";
+import Nav from "design-system/astro/Nav.astro";
 import type { Site } from "../lib/site";
 
 interface Props {
@@ -13,48 +15,62 @@ interface Props {
 
 const { site, path } = Astro.props;
 const t = site.texts;
-// The current page is marked for assistive technology; a page below a menu
-// item (a service, a news item) marks that item visually only.
-const state = (item: string) =>
-  item === path ? "page" : item !== "/" && path.startsWith(item) ? "section" : null;
+const items = site.mainMenu.map((item) => ({
+  href: item.path,
+  label: item.label,
+  current: item.path === path,
+}));
 ---
 
 <header class="site-header">
   <div class="site-container site-header-inner">
-    <a class="wordmark" href="/" aria-label={t.homeLink(site.settings.name)}>
-      {site.settings.name}<span class="signal-dot" aria-hidden="true"></span>
+    <a class="site-home" href="/" aria-label={t.homeLink(site.settings.name)}>
+      <Logo wordmark={false} size="sm" />
+      <span class="site-wordmark">{site.settings.name}</span>
     </a>
     {
-      site.mainMenu.length > 0 && (
+      items.length > 0 && (
         <>
-          <button
-            type="button"
-            class="btn btn-ghost btn-compact menu-button"
+          <Button
+            variant="quiet"
+            size="sm"
+            icon="menu"
+            class="site-menu-button"
             aria-expanded="false"
             aria-controls="site-navigation"
-            data-menu-toggle
+            data-site-menu
+            locale={site.language}
           >
-            <Icon name="list" size="md" />
             {t.menu}
-          </button>
-          <nav id="site-navigation" class="site-nav collapsible" aria-label={t.mainNavigation}>
-            <ul>
-              {site.mainMenu.map((item) => (
-                <li>
-                  <a
-                    href={item.path}
-                    class:list={[state(item.path) === "section" && "active"]}
-                    aria-current={state(item.path) === "page" ? "page" : undefined}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <MenuToggle />
+          </Button>
+          <Nav
+            id="site-navigation"
+            items={items}
+            label={t.mainNavigation}
+            orientation="horizontal"
+            class="site-nav"
+          />
         </>
       )
     }
   </div>
 </header>
+
+<script>
+  // The menu button shows or hides the navigation it controls; Escape closes
+  // it again with the focus back on the button.
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-site-menu]")) {
+    const target = document.getElementById(button.getAttribute("aria-controls") ?? "");
+    const set = (open: boolean) => {
+      button.setAttribute("aria-expanded", String(open));
+      target?.classList.toggle("site-nav--open", open);
+    };
+    button.addEventListener("click", () => set(button.getAttribute("aria-expanded") !== "true"));
+    target?.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && button.getAttribute("aria-expanded") === "true") {
+        set(false);
+        button.focus();
+      }
+    });
+  }
+</script>

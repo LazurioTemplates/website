@@ -32,9 +32,9 @@ without the person's instruction. LazurioTemplates publishes the template.
   the whole website.
 - The look is the design system
   [`LazurioTemplates/design-system`](https://github.com/LazurioTemplates/design-system)
-  v1.0.0, merged into `design-system/` as its `docs/adoption.md` asks, and used
-  directly: its tokens, stylesheet and components. A newer release, or the
-  Organization's own design system, arrives as a merge
+  v2.0.0 as a package (`"design-system": "github:LazurioTemplates/design-system#v2.0.0"`):
+  its styles, fonts, tokens and components. The Organization's own design
+  system, or a newer release, is a change of that one dependency
   ([`docs/extending.md`](docs/extending.md#the-design-system)).
 - [`docs/publishing.md`](docs/publishing.md): what the build produces and how
   the website gets onto the internet. Lazurio shows it to the Organization;
@@ -63,8 +63,9 @@ without the person's instruction. LazurioTemplates publishes the template.
 - **Accessibility**: one h1 per page, landmarks and a skip link, a menu that
   works with a keyboard and without JavaScript, images with alternative text,
   and colour pairs that reach WCAG AA in the light and dark theme.
-- **Speed**: static pages, no web fonts, a few hundred bytes of JavaScript for
-  the menu, and images converted to WebP in the sizes screens need.
+- **Speed**: static pages, the design system's fonts served with the website
+  (no other origin), under 1 kB of JavaScript per page (the menu), and images
+  converted to WebP in the sizes screens need.
 
 ## For agents
 
@@ -88,9 +89,7 @@ looks at the result in the browser and prepares a pull request.
 | `app/v2/` | The App (Astro, TypeScript) that builds the website |
 | `app/v2/src/content/` | The schemas of the content, the rules of the whole website and the language |
 | `app/v2/src/lib/texts.ts` | The words of the interface the code writes itself, in both languages |
-| `app/v2/src/styles/site.css` | The website's layout on the design system's tokens |
-| `design-system/` | The merged release of the design system; never edited here |
-| `design-system.lock.json` | The repository, tag, commit and tree of that release |
+| `app/v2/src/styles/site.css` | The website's layout on the design system's tokens (`--ds-*`) |
 | `.agents/skills/`, `.claude/skills/` | The skills for agents |
 | `docs/` | Adoption, extending, publishing and the Marketplace screens |
 | `lazurio.module.json` | Module id, port lease and Apps |

@@ -18,14 +18,14 @@ const { site, news } = Astro.props;
     <ul class="site-news" role="list">
       {news.map(({ entry, path }) => (
         <li class="site-news-item">
-          <time datetime={isoDay(entry.data.date)}>
+          <time class="ds-type-meta ds-numeric" datetime={isoDay(entry.data.date)}>
             {formatDate(entry.data.date, site.settings.locale)}
           </time>
           <div>
-            <h3 class="site-news-title">
+            <h3 class="ds-type-title site-news-title">
               <a href={path}>{entry.data.title}</a>
             </h3>
-            <p>{entry.data.summary}</p>
+            <p class="site-quiet">{entry.data.summary}</p>
           </div>
         </li>
       ))}

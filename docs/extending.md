@@ -75,7 +75,7 @@ addresses, link previews, alternative texts, landmarks, links that lead
 somewhere, no other origin, little JavaScript and the words of one language;
 every kind of content mistake on copies of the fixture; the build stopping on
 a broken content rule; contrast of the colours the website uses, styles from
-tokens only, the merged design system, paths that check out on Windows, the
+tokens only, the design system package, paths that check out on Windows, the
 skills, the start and build contracts of the Lazurio Module Standard and the
 module's files. `app/v2/tests/template/` adds the template's own contract and
 an adoption in each language; it skips in an adopted module.
@@ -116,35 +116,35 @@ and the App becomes `app/v3`:
 
 ## The design system
 
-The look is the design system in `design-system/`: a release merged so that
-its commit stays an ancestor (the design system's own `docs/adoption.md`),
-recorded in `design-system.lock.json`, and used directly through the alias
-`@design-system/*` (`design-system/app/v1/src/*`): its tokens, stylesheet and
-components. Nothing of it is copied or edited here.
+The look is the design system's package: the dependency `design-system` in
+`app/v2/package.json`, a Git dependency on a released tag, locked in
+`bun.lock` (commit and checksum). The website imports it by the package name
+only: `design-system/styles.css` (tokens, fonts, base styles, every
+component), its components one by one from `design-system/astro/<Name>.astro`,
+`design-system/tokens`, `design-system/brand` and `design-system`. Nothing of
+it is copied into this repository.
 
-**A newer release** of the same design system (for example 2.0.0 of
-`LazurioTemplates/design-system`, or the Organization's own next release) is
-a merge of its tag into the same directory:
+**A newer release** of the same design system is a new tag in that line:
 
 ```sh
-git fetch <the design system's repository URL> refs/tags/v<version>
-test "$(git rev-parse 'FETCH_HEAD^{commit}')" = "<commit of the release>"
-git merge -X subtree=design-system --no-ff -m "Website: take design system v<version>" FETCH_HEAD
+cd app/v2
+# "design-system": "github:LazurioTemplates/design-system#v<version>"
+# or, for an Organization's own: "git+ssh://git@github.com/<Organization>/design-system.git#v<version>"
+bun install
+bun run check
 ```
 
-Read the release's `CHANGELOG.md` first. Then update `design-system.lock.json`
-(tag, commit, tree `git rev-parse HEAD:design-system`), adapt the website where
-the design system changed what it uses (the alias, a component's properties,
-a class of its stylesheet), run `bun run check`, look at the website in the
-browser in both themes, and open a pull request that names the release.
+Read the release's `CHANGELOG.md` first; it says what a module must change.
+Adapt the website where a component's properties or a class changed, look at
+the website in the browser in both themes, and open a pull request that names
+the release.
 
-**Another design system** (the Organization's own brand) replaces the
-directory by a merge of its release, as step 7 of
-[adoption.md](adoption.md#7-make-it-the-organizations-own) shows. From then
-on, `design-system/` follows the Organization's design system; a release of
-this template that moves to a newer design system conflicts there, and you
-keep the Organization's directory and take that newer release into the
-Organization's design system first.
+**Another design system** (the Organization's own brand) is the same change
+of the line to its repository ([adoption.md](adoption.md#7-make-it-the-organizations-own)).
+A release of this template keeps its own line for the template's design
+system; when it conflicts, keep the Organization's line and take the
+template's code. A module's CI with a private design system is not solved
+yet (Lazurio/LazurioPlatform#915).
 
 ## Taking an update of the template
 
@@ -161,8 +161,8 @@ Read the release's `CHANGELOG.md` entry first; it says what changed and what
 to do. When files conflict, keep the module's own: its identity
 (`lazurio.module.json`, the `lazurio.runtime` id and names), its content in
 `data/v2/<language>/` and `data/v2/language.yaml`, a deleted language
-directory, and its own `design-system/` with `design-system.lock.json` when
-the Organization replaced the design system. Take the template's tooling
+directory, and its own `design-system` dependency (and its `bun.lock` entry)
+when the Organization uses its own design system. Take the template's tooling
 (dependencies, `bun.lock`, configuration, App code, tests, skills,
 workflows). Then run `bun install --frozen-lockfile` and `bun run check`, and
 open a pull request that names the release and its commit. Declining the pull

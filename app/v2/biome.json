@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
   "files": {
-    "includes": ["**", "!dist", "!.astro", "!**/*.astro", "!src/design-system/tokens.json"]
+    "includes": ["**", "!dist", "!.astro", "!**/*.astro"]
   },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2, "lineWidth": 100 },
   "linter": {

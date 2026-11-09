@@ -6,19 +6,18 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
-  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join } from "node:path";
 import { LANGUAGES, type Language } from "../../src/content/language";
-import { app, isTemplate, root, tempDir } from "../support";
+import { isTemplate, root, tempDir } from "../support";
 
 // The adoption docs/adoption.md describes, done on a copy of the template for
 // each language, and then the module's own `bun run check` in that copy: it
 // must pass in a module with the Organization's identity, one language and
-// its own content. The copy reuses this App's installed dependencies. On
-// Windows the copy's check would double a long run, so it runs on Linux and
-// macOS only.
+// its own content. The copy installs its dependencies from bun.lock, as an
+// adoption does (Bun's cache makes it quick). On Windows the copy's check
+// would double a long run, so it runs on Linux and macOS only.
 
 const copies: string[] = [];
 afterAll(() => {
@@ -58,7 +57,6 @@ function adopt(language: Language): string {
     mkdirSync(dirname(join(dir, path)), { recursive: true });
     copyFileSync(join(root, path), join(dir, path));
   }
-  symlinkSync(join(app, "node_modules"), join(dir, "app/v2/node_modules"), "dir");
 
   // Step 6: the Organization's identity.
   const manifest = json(join(dir, "lazurio.module.json"));
@@ -122,6 +120,15 @@ describe.skipIf(!isTemplate || process.platform === "win32")("adoption (docs/ado
       const env = Object.fromEntries(
         Object.entries(process.env).filter(([name]) => !name.startsWith("WEBSITE_")),
       );
+      // As step 8 of the adoption does: the frozen install, then the check.
+      const install = Bun.spawnSync([process.execPath, "install", "--frozen-lockfile"], {
+        cwd: join(dir, "app/v2"),
+        env,
+        stdout: "pipe",
+        stderr: "pipe",
+      });
+      if (install.exitCode !== 0) console.error(`${install.stdout}${install.stderr}`);
+      expect(install.exitCode).toBe(0);
       const run = Bun.spawnSync([process.execPath, "run", "check"], {
         cwd: join(dir, "app/v2"),
         env,

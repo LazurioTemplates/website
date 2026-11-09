@@ -87,9 +87,9 @@ module instead.
 - The App is static (`build_output: "dist"`) and declares no secrets and no
   siblings, so it needs nothing from the target besides a port of its pool.
 - The Organization's design system: find it (a module `design-system`
-  adopted from `LazurioTemplates/design-system`, or a design system the
-  Organization root names) and the tag of its newest release. Step 7 merges it
-  in place of the template's.
+  adopted from `LazurioTemplates/design-system` 2.0.0 or later, released as a
+  tag of its repository) and the tag of its newest release. Step 7 makes the
+  website depend on it in place of the template's.
 
 ## 5. Show the plan, then create the module
 
@@ -134,7 +134,7 @@ commit the merge, resolve the files the scaffold and the template both have:
 | `app/v1/` | nothing: delete the whole directory (`git rm -r app/v1`) | |
 | `app/v2/package.json` | `lazurio.runtime`: `title`, `company`, `module`, and `id` as the scaffold wrote it with `-v2` instead of `-v1` | everything else: `name`, `version`, scripts, exact dependencies, `packageManager`, `build_*`, `static_fallback`, `tags`, `description`, the listener, `preparation` |
 | `app/v2/bun.lock` | | the template's; `bun install --frozen-lockfile` confirms it is current |
-| `app/v2/` (the rest), `data/v2/`, `design-system/`, `design-system.lock.json`, `.agents/`, `.claude/`, `docs/`, `.gitattributes` | | the template's |
+| `app/v2/` (the rest), `data/v2/`, `.agents/`, `.claude/`, `docs/`, `.gitattributes` | | the template's |
 | `README.md`, `AGENTS.md` | | the template's, then adapt them (step 7) |
 | `.gitignore` | | the template's: it keeps ignoring the build outputs of the deleted `app/v1` |
 | `.github/workflows/` | | the template's `check.yml` and `windows.yml` |
@@ -160,30 +160,31 @@ website that is never built; a later release of the template that changes
 that language's example content then conflicts on deleted files, and you
 keep them deleted.
 
-**The look** (when the Organization has its own design system): the template
-carries `LazurioTemplates/design-system` with the fictional brand Example in
-`design-system/`. Replace it with the Organization's design system the same
-way it came, as a merge of its release, never by copying files:
+**The look** (when the Organization has its own design system): the website
+depends on the design system as a package, today the template's with the
+fictional brand Example. Point it at the Organization's design system by
+changing one line in `app/v2/package.json` (both packages are named
+`design-system`, so no import changes):
 
-```sh
-git rm -r -q design-system
-git commit -m "Website: make room for the Organization's design system"
-git fetch <the design system's repository URL> refs/tags/<its tag>
-git merge -s ours --no-commit --allow-unrelated-histories FETCH_HEAD
-git read-tree --prefix=design-system/ -u FETCH_HEAD
-git commit -m "Website: take the Organization's design system <tag>"
+```json
+"design-system": "git+ssh://git@github.com/<Organization>/design-system.git#v<version>"
 ```
 
-Then write its repository, tag, commit (`git rev-parse 'FETCH_HEAD^{commit}'`)
-and tree (`git rev-parse HEAD:design-system`) into `design-system.lock.json`
-and run `bun run check`: the contrast tests check its palette against every
-pair of colours the website uses, in both themes. The Organization's design
-system must keep the structure of the design system template (its tokens in
-`content/brand/colors/tokens.json`, its code in `app/v1/src/`), which an
-adoption of that template does. When the Organization has no design system
-yet, keep the template's and say so in the pull request; the Organization may
-adopt the design system template first. The wordmark is the text `name` of
+Then `bun install` (it updates `bun.lock`; commit both) and `bun run check`:
+the contrast tests check the Organization's palette against every pair of
+colours the website uses, in both themes. Changing the brand later is a new
+release of the Organization's design system and a new tag in this line.
+When the Organization has no design system yet, keep the template's and say
+so in the pull request; the Organization may adopt the design system template
+first. The wordmark beside the logo symbol is the text `name` of
 `data/v2/<language>/site.yaml`.
+
+*Known limitation:* an Organization's design system is a private repository,
+and the module's GitHub Actions cannot install it without read access to it
+(Lazurio/LazurioPlatform#915). On an Environment with the person's SSH key it
+installs as it is; until the issue is resolved, tell the person that the
+module's CI fails at `bun install` and ask the Organization's Admin for that
+access (skill `admin-request`), without creating keys or secrets yourself.
 
 **The content** (the `empty` start, or whenever the Organization is ready),
 in `data/v2/<language>/`. Take every fact from the person or the Organization
@@ -250,6 +251,6 @@ as the last step and only on the person's instruction.
 - force-push, delete a branch, repository or data, or reset a protected
   branch; a failed or partial adoption keeps its worktree and tells the person
   exactly where to resume;
-- read files of this template repository or of the design system's
-  repository at run time, or edit `design-system/` by hand: the module is a
-  copy that takes updates by merge.
+- read files of this template repository at run time, or import the design
+  system by a path or copy its files: the module takes template updates by
+  merge and the design system as a package on a released tag.

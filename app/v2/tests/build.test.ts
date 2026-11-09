@@ -292,17 +292,19 @@ for (const language of kept) {
 
     test("has landmarks, a skip link and a marked current page", () => {
       for (const { address, html } of built().pages) {
-        expect(html, address).toMatch(/<a class="skip" href="#content"/);
+        expect(html, address).toMatch(/<a class="ds-skip-link" href="#content"/);
         expect(html, address).toMatch(/<main id="content"/);
         expect(html, address).toMatch(/<header class="site-header"/);
         expect(html, address).toMatch(/<footer class="site-footer"/);
         // A page of the main menu is marked as the current one, and only it.
-        const current = attr(html, /<a href="([^"]+)"[^>]*aria-current="page"/);
+        const current = attr(html, /<a [^>]*href="([^"]+)"[^>]*aria-current="page"/);
         if (current !== undefined) expect(current, address).toBe(address);
-        const menu = /<nav id="site-navigation"[\s\S]*?<\/nav>/.exec(html)?.[0] ?? "";
+        const menu = /<nav [^>]*id="site-navigation"[\s\S]*?<\/nav>/.exec(html)?.[0] ?? "";
         if (menu !== "") expect(menu, address).toContain(`aria-label="${words.mainNavigation}"`);
         if (menu.includes(`href="${address}"`)) {
-          expect(menu, address).toMatch(new RegExp(`<a href="${address}"[^>]*aria-current="page"`));
+          expect(menu, address).toMatch(
+            new RegExp(`<a [^>]*href="${address}"[^>]*aria-current="page"`),
+          );
         }
       }
     });

@@ -7,7 +7,8 @@ import { getImage } from "astro:assets";
 import { isoDay } from "../content/model";
 import { absoluteUrl } from "../lib/seo";
 import type { Site } from "../lib/site";
-import { faviconHref, roleColor, tokenStylesheet, tokens } from "@design-system/tokens";
+import { logoSymbol } from "design-system/brand";
+import { color } from "design-system/tokens";
 
 interface Props {
   site: Site;
@@ -28,10 +29,13 @@ const indexed = settings.indexing && path !== null;
 const share = await getImage({ src: image ?? settings.shareImage, width: 1200, format: "jpg" });
 const shareUrl = absoluteUrl(settings.url, share.src);
 const shareAlt = image ? (imageAlt ?? "") : settings.shareImageAlt;
-const css = tokenStylesheet(tokens);
-// The browser's frame takes the colour of the header in each theme.
-const light = roleColor(tokens, "light", "surface-raised");
-const dark = roleColor(tokens, "dark", "surface-raised");
+// The browser's frame takes the colour of the header in each theme, and the
+// favicon is the brand's logo symbol in ink, light and dark.
+const light = color.light.surface;
+const dark = color.dark.surface;
+const favicon = `data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${logoSymbol.viewBox}"><style>svg{color:${color.light.ink}}@media (prefers-color-scheme:dark){svg{color:${color.dark.ink}}}</style>${logoSymbol.markup}</svg>`,
+)}`;
 ---
 
 <meta charset="utf-8" />
@@ -54,9 +58,8 @@ const dark = roleColor(tokens, "dark", "surface-raised");
 <meta property="og:image:alt" content={shareAlt} />
 {published && <meta property="article:published_time" content={isoDay(published)} />}
 <meta name="twitter:card" content="summary_large_image" />
-<link rel="icon" href={faviconHref(tokens)} />
+<link rel="icon" href={favicon} type="image/svg+xml" />
 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
-<Fragment set:html={`<style>${css}</style>`} />
 <script is:inline>
   // Without JavaScript the menu stays open (site.css); with it, it collapses
   // behind its button (MenuToggle of the design system).
