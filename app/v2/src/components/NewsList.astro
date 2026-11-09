@@ -1,0 +1,34 @@
+---
+import { isoDay } from "../content/model";
+import { formatDate } from "../lib/format";
+import type { Site } from "../lib/site";
+
+interface Props {
+  site: Site;
+  news: Site["news"];
+}
+
+const { site, news } = Astro.props;
+---
+
+{
+  news.length === 0 ? (
+    <p class="site-quiet">{site.texts.noNews}</p>
+  ) : (
+    <ul class="site-news" role="list">
+      {news.map(({ entry, path }) => (
+        <li class="site-news-item">
+          <time class="ds-type-meta ds-numeric" datetime={isoDay(entry.data.date)}>
+            {formatDate(entry.data.date, site.settings.locale)}
+          </time>
+          <div>
+            <h3 class="ds-type-title site-news-title">
+              <a href={path}>{entry.data.title}</a>
+            </h3>
+            <p class="site-quiet">{entry.data.summary}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}

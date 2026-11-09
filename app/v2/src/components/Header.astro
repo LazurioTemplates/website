@@ -1,0 +1,76 @@
+---
+// The header: the brand's logo symbol with the website's name, and the main
+// menu as the design system's horizontal navigation. Below the design
+// system's `lg` breakpoint the menu collapses behind a "Menu" button; without
+// JavaScript it stays open (site.css).
+import Button from "design-system/astro/Button.astro";
+import Logo from "design-system/astro/Logo.astro";
+import Nav from "design-system/astro/Nav.astro";
+import type { Site } from "../lib/site";
+
+interface Props {
+  site: Site;
+  path: string;
+}
+
+const { site, path } = Astro.props;
+const t = site.texts;
+const items = site.mainMenu.map((item) => ({
+  href: item.path,
+  label: item.label,
+  current: item.path === path,
+}));
+---
+
+<header class="site-header">
+  <div class="site-container site-header-inner">
+    <a class="site-home" href="/" aria-label={t.homeLink(site.settings.name)}>
+      <Logo wordmark={false} size="sm" />
+      <span class="site-wordmark">{site.settings.name}</span>
+    </a>
+    {
+      items.length > 0 && (
+        <>
+          <Button
+            variant="quiet"
+            size="sm"
+            icon="menu"
+            class="site-menu-button"
+            aria-expanded="false"
+            aria-controls="site-navigation"
+            data-site-menu
+            locale={site.language}
+          >
+            {t.menu}
+          </Button>
+          <Nav
+            id="site-navigation"
+            items={items}
+            label={t.mainNavigation}
+            orientation="horizontal"
+            class="site-nav"
+          />
+        </>
+      )
+    }
+  </div>
+</header>
+
+<script>
+  // The menu button shows or hides the navigation it controls; Escape closes
+  // it again with the focus back on the button.
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-site-menu]")) {
+    const target = document.getElementById(button.getAttribute("aria-controls") ?? "");
+    const set = (open: boolean) => {
+      button.setAttribute("aria-expanded", String(open));
+      target?.classList.toggle("site-nav--open", open);
+    };
+    button.addEventListener("click", () => set(button.getAttribute("aria-expanded") !== "true"));
+    target?.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && button.getAttribute("aria-expanded") === "true") {
+        set(false);
+        button.focus();
+      }
+    });
+  }
+</script>

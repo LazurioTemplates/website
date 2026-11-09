@@ -1,0 +1,68 @@
+---
+// Every page of the website comes from data/v2/: the pages at the address of
+// their file name, and the services and news below the page that shows them
+// (src/content/model.ts).
+import type { GetStaticPaths } from "astro";
+import NewsView from "../components/NewsView.astro";
+import PageView from "../components/PageView.astro";
+import ServiceView from "../components/ServiceView.astro";
+import Base from "../layouts/Base.astro";
+import { absoluteUrl, documentTitle, jsonLd } from "../lib/seo";
+import { loadSite, type SiteRoute } from "../lib/site";
+
+export const getStaticPaths = (async () => {
+  const site = await loadSite();
+  return site.routes.map((route) => ({
+    params: { path: route.path === "/" ? undefined : route.path.slice(1, -1) },
+    props: { route },
+  }));
+}) satisfies GetStaticPaths;
+
+const { route } = Astro.props as { route: SiteRoute };
+const site = await loadSite();
+const { settings, contacts } = site;
+const { data } = route.entry;
+const home = route.kind === "page" && route.entry.id === "index";
+const title = home
+  ? documentTitle(route.kind === "page" ? route.entry.data.hero?.title : undefined, settings.name)
+  : documentTitle(data.title, settings.name);
+const description =
+  route.kind === "news"
+    ? (route.entry.data.description ?? route.entry.data.summary)
+    : route.entry.data.description;
+// The Organization for search engines, on the home page.
+const organization = home
+  ? jsonLd({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: settings.legalName,
+      alternateName: settings.name,
+      url: absoluteUrl(settings.url, "/"),
+      email: contacts.email,
+      telephone: contacts.phone,
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: contacts.address.street,
+        postalCode: contacts.address.postalCode,
+        addressLocality: contacts.address.city,
+        addressCountry: contacts.address.country,
+      },
+    })
+  : undefined;
+---
+
+<Base
+  site={site}
+  title={title}
+  description={description}
+  path={route.path}
+  image={data.image}
+  imageAlt={data.imageAlt}
+  type={route.kind === "news" ? "article" : "website"}
+  published={route.kind === "news" ? route.entry.data.date : undefined}
+  structuredData={organization}
+>
+  {route.kind === "page" && <PageView site={site} entry={route.entry} />}
+  {route.kind === "service" && <ServiceView site={site} entry={route.entry} list={route.list} />}
+  {route.kind === "news" && <NewsView site={site} entry={route.entry} list={route.list} />}
+</Base>

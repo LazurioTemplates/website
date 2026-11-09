@@ -1,0 +1,19 @@
+# Settings of the whole website. Every field is described in data/v2/README.md.
+name: Example
+legalName: Example s.r.o.
+# The public address of the website, without a path. Canonical addresses,
+# link previews and the sitemap use it (docs/publishing.md).
+url: https://www.example.com
+locale: cs_CZ
+description: Example pomáhá menším firmám ověřit, co jejich online prodeji opravdu pomáhá. Audit, malé experimenty, měření a školení týmu.
+shareImage: ./media/share.png
+shareImageAlt: Značka Example a věta Ověříme, co vašemu prodeji opravdu pomáhá.
+# false until the website is public at `url`: search engines are asked not to
+# index it (robots.txt and the robots meta tag).
+indexing: false
+callToAction:
+  title: Chcete vědět, co by pomohlo vašemu prodeji?
+  text: První konzultace je zdarma a zabere půl hodiny. Řekneme vám, kde začít a co to bude stát.
+  action:
+    label: Domluvit konzultaci
+    href: /kontakt/

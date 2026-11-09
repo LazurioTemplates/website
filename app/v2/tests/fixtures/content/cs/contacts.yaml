@@ -1,0 +1,9 @@
+email: info@example.org
+phone: +420 123 456 789
+address:
+  street: Zkušební 1
+  postalCode: 100 00
+  city: Praha
+  country: Česko
+company:
+  id: "00000000"

@@ -1,0 +1,36 @@
+---
+// The opening of a page in the design system's type roles: the hero heading,
+// the lead and at most one primary action (the first).
+import Button from "design-system/astro/Button.astro";
+import type { PageData } from "../content/schemas";
+import type { Site } from "../lib/site";
+
+interface Props {
+  site: Site;
+  hero: NonNullable<PageData<unknown>["hero"]>;
+}
+
+const { site, hero } = Astro.props;
+---
+
+<div class="site-hero">
+  {hero.eyebrow && <p class="ds-type-meta site-eyebrow">{hero.eyebrow}</p>}
+  <h1 class="ds-type-hero">{hero.title}</h1>
+  {hero.lead && <p class="ds-type-lead">{hero.lead}</p>}
+  {
+    hero.actions.length > 0 && (
+      <p class="site-actions">
+        {hero.actions.map((action, index) => (
+          <Button
+            href={action.href}
+            variant={index === 0 ? "primary" : "secondary"}
+            size="lg"
+            locale={site.language}
+          >
+            {action.label}
+          </Button>
+        ))}
+      </p>
+    )
+  }
+</div>

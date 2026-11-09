@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.astro/
+*.tsbuildinfo
+.env*
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.worktrees/
+# The scaffold's app/v1, which an adoption replaces with app/v2
+# (docs/adoption.md); kept ignored for the checkouts that installed it.
+/app/v1/node_modules/
+/app/v1/dist/
+/app/v1/.astro/
+.DS_Store

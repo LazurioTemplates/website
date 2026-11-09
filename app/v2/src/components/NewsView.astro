@@ -1,0 +1,48 @@
+---
+import Breadcrumbs from "design-system/astro/Breadcrumbs.astro";
+import Button from "design-system/astro/Button.astro";
+import { render } from "astro:content";
+import { isoDay } from "../content/model";
+import { formatDate } from "../lib/format";
+import type { Site } from "../lib/site";
+import ContentImage from "./ContentImage.astro";
+
+interface Props {
+  site: Site;
+  entry: Site["news"][number]["entry"];
+  list: Site["home"];
+}
+
+const { site, entry, list } = Astro.props;
+const { data } = entry;
+const t = site.texts;
+const { Content } = await render(entry);
+const listPath = site.lists.news?.path ?? "/";
+---
+
+<div class="site-container">
+  <div class="site-breadcrumbs">
+    <Breadcrumbs
+      locale={site.language}
+      items={[{ label: t.home, href: "/" }, { label: list.data.title, href: listPath }, { label: data.title }]}
+    />
+  </div>
+  <article>
+    <header class="site-page-header">
+      <h1 class="ds-type-display">{data.title}</h1>
+      <p class="ds-type-meta">
+        <span>
+          {`${t.published} `}<time datetime={isoDay(data.date)}>{formatDate(data.date, site.settings.locale)}</time>
+        </span>
+      </p>
+      <p class="ds-type-lead">{data.summary}</p>
+    </header>
+    {data.image && data.imageAlt && <ContentImage src={data.image} alt={data.imageAlt} />}
+    <div class="ds-prose">
+      <Content />
+    </div>
+  </article>
+  <p class="site-section">
+    <Button href={listPath} icon="arrow-left" locale={site.language}>{t.backToNews}</Button>
+  </p>
+</div>

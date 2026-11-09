@@ -1,0 +1,43 @@
+---
+// The design system's styles (tokens, fonts, base and every component) from
+// its package, then the website's own layout on its tokens (site.css).
+import "design-system/styles.css";
+import "../styles/site.css";
+import type { ImageMetadata } from "astro";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import Seo from "../components/Seo.astro";
+import type { Site } from "../lib/site";
+
+interface Props {
+  site: Site;
+  title: string;
+  description: string;
+  // The page's address on the website; null for the 404 page.
+  path: string | null;
+  image?: ImageMetadata | undefined;
+  imageAlt?: string | undefined;
+  type?: "website" | "article";
+  published?: Date | undefined;
+  // Structured data (schema.org) as JSON, for the home page.
+  structuredData?: string | undefined;
+}
+
+const { site, path, structuredData, ...head } = Astro.props;
+---
+
+<!doctype html>
+<html lang={site.language}>
+  <head>
+    <Seo site={site} path={path} {...head} />
+    {structuredData && <script type="application/ld+json" set:html={structuredData} />}
+  </head>
+  <body>
+    <a class="ds-skip-link" href="#content">{site.texts.skipToContent}</a>
+    <Header site={site} path={path ?? ""} />
+    <main id="content" tabindex="-1">
+      <slot />
+    </main>
+    <Footer site={site} />
+  </body>
+</html>

@@ -1,0 +1,86 @@
+---
+import Card from "design-system/astro/Card.astro";
+import { telHref } from "../lib/format";
+import type { Site } from "../lib/site";
+
+interface Props {
+  site: Site;
+}
+
+const { site } = Astro.props;
+const { contacts } = site;
+const t = site.texts;
+---
+
+<ul class="site-grid" role="list">
+  <li>
+    <Card title={t.address} headingLevel={2}>
+      <address>
+        {contacts.address.street}<br />
+        {contacts.address.postalCode}&nbsp;{contacts.address.city}<br />
+        {contacts.address.country}
+      </address>
+    </Card>
+  </li>
+  <li>
+    <Card title={t.emailAndPhone} headingLevel={2}>
+      <p><a class="site-break" href={`mailto:${contacts.email}`}>{contacts.email}</a></p>
+      <p><a href={telHref(contacts.phone)}>{contacts.phone}</a></p>
+    </Card>
+  </li>
+  {
+    contacts.hours.length > 0 && (
+      <li>
+        <Card title={t.hours} headingLevel={2}>
+          <dl class="site-pairs">
+            {contacts.hours.map((row) => (
+              <div>
+                <dt>{row.days}</dt>
+                <dd class="ds-numeric">{row.time}</dd>
+              </div>
+            ))}
+          </dl>
+        </Card>
+      </li>
+    )
+  }
+</ul>
+
+{
+  contacts.people.length > 0 && (
+    <section class="site-section" aria-labelledby="contact-people">
+      <h2 id="contact-people" class="ds-type-display">
+        {t.people}
+      </h2>
+      <ul class="site-grid" role="list">
+        {contacts.people.map((person) => (
+          <li>
+            <Card title={person.name} description={person.role} headingLevel={3}>
+              {person.email && (
+                <p>
+                  <a class="site-break" href={`mailto:${person.email}`}>
+                    {person.email}
+                  </a>
+                </p>
+              )}
+              {person.phone && (
+                <p>
+                  <a href={telHref(person.phone)}>{person.phone}</a>
+                </p>
+              )}
+            </Card>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<section class="site-section" aria-labelledby="contact-company">
+  <h2 id="contact-company" class="ds-type-display">{t.companyDetails}</h2>
+  <dl class="site-pairs site-company">
+    <div><dt>{t.companyId}</dt><dd class="ds-numeric">{contacts.company.id}</dd></div>
+    {contacts.company.vatId && <div><dt>{t.vatId}</dt><dd class="ds-numeric">{contacts.company.vatId}</dd></div>}
+  </dl>
+  {contacts.company.register && <p class="site-quiet">{contacts.company.register}</p>}
+</section>

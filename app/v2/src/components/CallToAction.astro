@@ -1,0 +1,21 @@
+---
+import Button from "design-system/astro/Button.astro";
+import type { Site } from "../lib/site";
+
+interface Props {
+  site: Site;
+  cta: NonNullable<Site["settings"]["callToAction"]>;
+}
+
+const { site, cta } = Astro.props;
+---
+
+<aside class="site-cta" aria-labelledby="call-to-action">
+  <div>
+    <h2 id="call-to-action" class="ds-type-display">{cta.title}</h2>
+    {cta.text && <p class="ds-type-lead">{cta.text}</p>}
+  </div>
+  <Button href={cta.action.href} variant="primary" size="lg" iconEnd="arrow-right" locale={site.language}>
+    {cta.action.label}
+  </Button>
+</aside>

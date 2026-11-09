@@ -1,0 +1,48 @@
+---
+// The services as the design system's cards: title, summary, and in the
+// footer the price and a link to the service's page.
+import Button from "design-system/astro/Button.astro";
+import Card from "design-system/astro/Card.astro";
+import type { Site } from "../lib/site";
+
+interface Props {
+  site: Site;
+  services: Site["services"];
+  headingLevel: 2 | 3;
+}
+
+const { site, services, headingLevel } = Astro.props;
+const t = site.texts;
+---
+
+{
+  services.length === 0 ? (
+    <p class="site-quiet">{t.noServices}</p>
+  ) : (
+    <ul class="site-grid" role="list">
+      {services.map(({ entry, path }) => (
+        <li>
+          <Card title={entry.data.title} description={entry.data.summary} headingLevel={headingLevel}>
+            <Fragment slot="footer">
+              {entry.data.price && (
+                <span class="ds-type-meta site-card-price">
+                  {t.price}: {entry.data.price}
+                </span>
+              )}
+              <Button
+                href={path}
+                variant="soft"
+                size="sm"
+                iconEnd="arrow-right"
+                aria-label={`${t.serviceMore}: ${entry.data.title}`}
+                locale={site.language}
+              >
+                {t.serviceMore}
+              </Button>
+            </Fragment>
+          </Card>
+        </li>
+      ))}
+    </ul>
+  )
+}

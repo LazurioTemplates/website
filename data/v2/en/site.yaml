@@ -1,0 +1,19 @@
+# Settings of the whole website. Every field is described in data/v2/README.md.
+name: Example
+legalName: Example s.r.o.
+# The public address of the website, without a path. Canonical addresses,
+# link previews and the sitemap use it (docs/publishing.md).
+url: https://www.example.com
+locale: en_GB
+description: Example helps smaller companies find out what really helps their online sales. Sales audits, small experiments, measurement and team training.
+shareImage: ./media/share.png
+shareImageAlt: The Example wordmark and the sentence We find out what really helps your sales.
+# false until the website is public at `url`: search engines are asked not to
+# index it (robots.txt and the robots meta tag).
+indexing: false
+callToAction:
+  title: Want to know what would help your sales?
+  text: The first consultation is free and takes half an hour. We tell you where to start and what it will cost.
+  action:
+    label: Book a consultation
+    href: /contact/
