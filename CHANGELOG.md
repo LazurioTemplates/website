@@ -3,9 +3,7 @@
 A release is an annotated tag `v<semver>` with a GitHub Release, and the
 version is independent of the App generation (`docs/extending.md`).
 
-## 0.1.0
-
-A draft of the first release; it gets its date when it is tagged.
+## 0.1.0 — 2026-11-09
 
 The first release of the company website template of the Marketplace of
 Lazurio: App generation `app/v2` on the stack profile `content@2026.11`
