@@ -1,4 +1,5 @@
 import type { Language } from "./language";
+import { renderedNodes } from "./markdown";
 import {
   type ContactsData,
   NEWS_FILE,
@@ -211,24 +212,15 @@ export function buildSite<P extends PageEntry, S extends ServiceEntry, N extends
   };
 }
 
-// Images of a Markdown body without their alternative text: ![](file) and
-// an <img> without a non-empty alt.
+// Images of a Markdown text that render without an alternative text, in any
+// form the parser renders (src/content/markdown.ts).
 export function imageProblems(markdown: string): string[] {
-  const problems: string[] = [];
-  for (const [, alt, src] of markdown.matchAll(/!\[([^\]]*)\]\(([^)\s]+)/g)) {
-    if (!alt?.trim()) problems.push(`the image ${src} has no alternative text`);
-  }
-  for (const [tag] of markdown.matchAll(/<img\b[^>]*>/gi)) {
-    if (!/\salt="[^"]*\S[^"]*"/i.test(tag))
-      problems.push(`the image ${tag} has no alternative text`);
-  }
-  return problems;
+  return renderedNodes(markdown)
+    .images.filter((image) => image.alt.trim() === "")
+    .map((image) => `the image ${image.src || "without src"} has no alternative text`);
 }
 
-// The site-relative links of a Markdown body: [text](/path/) and href="/path/".
+// The links of a Markdown text that render to a page of the website.
 export function internalLinks(markdown: string): string[] {
-  const links: string[] = [];
-  for (const [, href] of markdown.matchAll(/\]\((\/[^)\s]*)/g)) if (href) links.push(href);
-  for (const [, href] of markdown.matchAll(/href="(\/[^"]*)"/g)) if (href) links.push(href);
-  return links;
+  return renderedNodes(markdown).links.filter((href) => href.startsWith("/"));
 }

@@ -13,6 +13,7 @@ import {
 import { dirname, join, relative } from "node:path";
 import packageJson from "../package.json";
 import { LANGUAGES, type Language, readLanguage } from "../src/content/language";
+import { renderedNodes } from "../src/content/markdown";
 import { readLanguageSite } from "../src/content/read";
 import { texts } from "../src/lib/texts";
 import { app, data, fixture, tempDir } from "./support";
@@ -120,30 +121,54 @@ describe("build contract", () => {
     expect(html).not.toContain('rel="canonical"');
   });
 
-  test(
-    "the build stops on a broken rule of the content, such as an image without its alternative text",
-    () => {
-      // Beside the App, as content always is: on Windows Astro cannot resolve
-      // the images of content on another drive than the App (a temporary
-      // directory on C: while the checkout is on D:).
-      const cache = join(app, "node_modules", ".cache");
-      mkdirSync(cache, { recursive: true });
-      const dir = mkdtempSync(join(cache, "website-broken-content-"));
-      cpSync(fixture, dir, { recursive: true });
-      const page = join(dir, "cs/pages/index.md");
-      writeFileSync(
-        page,
-        readFileSync(page, "utf8").replace("Text úvodní", "![](../media/share.png)\n\nText úvodní"),
-      );
-      const run = runBuild({ WEBSITE_DATA: dir });
-      expect(run.exitCode).not.toBe(0);
-      rmSync(dir, { recursive: true, force: true });
-      expect(`${run.stdout}${run.stderr}`).toContain(
-        "pages/index.md: the image ../media/share.png has no alternative text",
-      );
-    },
-    buildTimeoutMs,
-  );
+  // Each form, built: the build stops with the problem the content check
+  // names (src/content/markdown.ts reads what the parser renders).
+  const broken: [string, string, string][] = [
+    [
+      "an inline image without alternative text",
+      "![](../media/share.png)",
+      "pages/index.md: the image ../media/share.png has no alternative text",
+    ],
+    [
+      "a reference image without alternative text",
+      "![][image]\n\n[image]: https://example.org/asset.png",
+      "pages/index.md: the image https://example.org/asset.png has no alternative text",
+    ],
+    [
+      "an HTML image without alternative text",
+      '<img src="https://example.org/asset.png">',
+      "pages/index.md: the image https://example.org/asset.png has no alternative text",
+    ],
+    [
+      "a reference link that leads nowhere",
+      "[Kontakt][k]\n\n[k]:\n  /kontakty/",
+      "pages/index.md: the link /kontakty/ leads to no page of the website",
+    ],
+  ];
+  for (const [form, markdown, problem] of broken) {
+    test(
+      `the build stops on a broken rule of the content: ${form}`,
+      () => {
+        // Beside the App, as content always is: on Windows Astro cannot resolve
+        // the images of content on another drive than the App (a temporary
+        // directory on C: while the checkout is on D:).
+        const cache = join(app, "node_modules", ".cache");
+        mkdirSync(cache, { recursive: true });
+        const dir = mkdtempSync(join(cache, "website-broken-content-"));
+        cpSync(fixture, dir, { recursive: true });
+        const page = join(dir, "cs/pages/index.md");
+        writeFileSync(
+          page,
+          readFileSync(page, "utf8").replace("Text úvodní", `${markdown}\n\nText úvodní`),
+        );
+        const run = runBuild({ WEBSITE_DATA: dir });
+        rmSync(dir, { recursive: true, force: true });
+        expect(run.exitCode).not.toBe(0);
+        expect(`${run.stdout}${run.stderr}`).toContain(problem);
+      },
+      buildTimeoutMs,
+    );
+  }
 });
 
 describe("drafts and empty lists (the test fixture)", () => {
@@ -159,6 +184,29 @@ describe("drafts and empty lists (the test fixture)", () => {
     expect(existsSync(join(built().dir, "aktuality/koncept"))).toBe(false);
     const sitemap = readFileSync(join(built().dir, "sitemap.xml"), "utf8");
     expect(sitemap).not.toContain("koncept");
+  });
+
+  test("the content check sees every image and link the page renders", () => {
+    const html = built().pages.find((p) => p.address === "/zapis/")?.html ?? "";
+    const body = readFileSync(join(fixture, "cs/pages/zapis.md"), "utf8").split(/\n---\n/)[1] ?? "";
+    const seen = renderedNodes(body);
+    const main = /<main[\s\S]*<\/main>/.exec(html)?.[0] ?? "";
+    const rendered = [...main.matchAll(/<img\b[^>]*>/g)].map(([tag]) => tag);
+    expect(seen.images.length).toBe(6);
+    expect(rendered.length).toBe(seen.images.length);
+    for (const { src, alt } of seen.images) {
+      expect(
+        rendered.some((tag) => tag.includes(`src="${src}"`) && tag.includes(`alt="${alt}"`)),
+        src,
+      ).toBe(true);
+    }
+    expect(seen.links.filter((href) => href.startsWith("/"))).toEqual([
+      "/kontakt/",
+      "/aktuality/",
+      "/sluzby/",
+      "/kontakt/",
+    ]);
+    for (const href of seen.links) expect(main, href).toContain(`href="${href}"`);
   });
 
   test("an empty list says so", () => {

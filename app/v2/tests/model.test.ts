@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { renderedNodes } from "../src/content/markdown";
 import { buildSite, internalLinks, newsSlug, pagePath } from "../src/content/model";
 import type { NewsData, PageData, ServiceData } from "../src/content/schemas";
 
@@ -96,10 +97,14 @@ describe("site model", () => {
     ).toThrow("locale cs_CZ is not of the website's language en");
   });
 
-  test("links of Markdown and HTML are found", () => {
-    expect(internalLinks('[a](/x/) [b](https://e.com) <a href="/y/#z">c</a>')).toEqual([
-      "/x/",
-      "/y/#z",
+  test("links and images are read from what the Markdown renders", () => {
+    expect(
+      internalLinks('[a](/x/) [b](https://e.com) <a href="/y/#z">c</a> [d][r]\n\n[r]:\n  /w/'),
+    ).toEqual(["/x/", "/y/#z", "/w/"]);
+    expect(renderedNodes('![A](a.png) ![][b] <img src="c.png">\n\n[b]: b.png').images).toEqual([
+      { src: "a.png", alt: "A" },
+      { src: "b.png", alt: "" },
+      { src: "c.png", alt: "" },
     ]);
   });
 });

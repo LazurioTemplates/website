@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { z } from "astro/zod";
 import { isLanguage, LANGUAGES, type Language, readLanguage } from "./language";
+import { renderedNodes } from "./markdown";
 import {
   buildSite,
   ContentError,
@@ -110,11 +111,13 @@ function checkLanguage(root: string, language: Language): CheckedLanguage {
     }
   }
 
-  // That the images of a text exist; their alternative text is a rule of the
-  // site model, which the build checks too.
+  // That the local images a text renders exist; their alternative text is a
+  // rule of the site model, which the build checks too.
   function checkBodyImages(file: string, body: string) {
-    for (const [, , src] of body.matchAll(/!\[([^\]]*)\]\(([^)\s]+)/g)) {
-      if (src && !/^[a-z]+:/.test(src) && !src.startsWith("/")) checkImage(file, src);
+    for (const { src } of renderedNodes(body).images) {
+      if (src && !/^[a-z][a-z0-9+.-]*:/i.test(src) && !src.startsWith("/")) {
+        checkImage(file, decodeURI(src));
+      }
     }
   }
 

@@ -54,7 +54,11 @@ Lazurio: App generation `app/v2` on the stack profile `content@2026.11`
   request and on Windows for pull requests that change the App, the content
   or a workflow.
 - `bun run build` stops on the same content rules as `validate:data` in the
-  language it builds, the alternative text of every image included.
+  language it builds, the alternative text of every image included. Images
+  and links are read from the hast that Astro's Markdown processor, Sätteri
+  0.10.5, renders (`app/v2/src/content/markdown.ts`), so references, their
+  definitions on the next line and HTML in the text count too; Astro's
+  processor is configured with the same features.
 
 ### For adopted modules
 

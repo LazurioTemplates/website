@@ -189,7 +189,10 @@ stay publishable:
   and the module's files.
 - `bun run build` stops on the same rules of the content as `validate:data`
   in the language it builds: the schemas, the site model and the alternative
-  text of every image. Lazurio and a hosting run the build, so a broken rule
+  text of every image. Images and links are read from what the Markdown
+  renders, with Astro's own parser (Sätteri, `app/v2/src/content/markdown.ts`),
+  never with a pattern over the source, so every form counts: inline,
+  references with their definition anywhere, and HTML in the text. Lazurio and a hosting run the build, so a broken rule
   never reaches the website.
 - `app/v2/tests/template/` checks the template itself: its placeholders, both
   languages, the screens, and an adoption by `docs/adoption.md` in each

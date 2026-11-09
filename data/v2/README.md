@@ -115,6 +115,8 @@ The address is `/<page that shows news>/<name>/`, without the date.
   a draft) is an error.
 - An image is a file in `<language>/media/`, named relative to the content file:
   `image: ../media/photo.jpg` in front matter, `![What it shows](../media/photo.jpg)`
-  in the text. Every image has its alternative text. The build makes WebP
+  in the text. Every image has its alternative text, in whatever form it is
+  written: inline, a reference (`![Graf][graf]` with `[graf]: …` anywhere in
+  the file) or HTML (`<img … alt="…">`). The build makes WebP
   copies in the sizes screens need; keep the original under about 2400 px wide.
 - Use only images and texts the Organization owns or may use.

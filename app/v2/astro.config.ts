@@ -1,9 +1,11 @@
 import { createHash } from "node:crypto";
 import { join, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { satteri } from "@astrojs/markdown-satteri";
 import { astroServerOptions, ModuleKitError, onShutdown } from "@lazurio/module-kit";
 import { defineConfig } from "astro/config";
 import { readLanguage } from "./src/content/language";
+import { MARKDOWN_FEATURES } from "./src/content/markdown";
 
 const LISTENER = "app";
 
@@ -49,7 +51,9 @@ export default defineConfig({
   build: { format: "directory" },
   // The development server shows the website as the build does.
   devToolbar: { enabled: false },
-  markdown: { syntaxHighlight: false },
+  // Astro's own Markdown processor, Sätteri, with the features the content
+  // checks parse with (src/content/markdown.ts), so they see what renders.
+  markdown: { syntaxHighlight: false, processor: satteri({ features: MARKDOWN_FEATURES }) },
   vite: {
     // No .env* files on the start path (standard 4.3).
     envDir: false,

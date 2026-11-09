@@ -123,16 +123,113 @@ describe("the content checks", () => {
     expect(inText).toContain(
       "cs/pages/index.md: the image ../media/share.png has no alternative text",
     );
-    const inHtml = problemsAfter((dir) =>
+  });
+
+  // Every form the Markdown parser renders to an <img> or an <a>, without a
+  // regular expression over the source: the check reads the rendered nodes
+  // (src/content/markdown.ts).
+  const imagesWithoutAlt: [string, string, string][] = [
+    ["inline", "![](https://example.org/asset.png)", "https://example.org/asset.png"],
+    [
+      "a blank alternative text",
+      "![  ](https://example.org/asset.png)",
+      "https://example.org/asset.png",
+    ],
+    [
+      "a reference, defined below",
+      "![][image]\n\n[image]: https://example.org/asset.png",
+      "https://example.org/asset.png",
+    ],
+    [
+      "a reference with its definition's address on the next line",
+      '![][dalsi]\n\n[dalsi]:\n  https://example.org/b.png\n  "Titulek"',
+      "https://example.org/b.png",
+    ],
+    [
+      "a collapsed reference to an address in angle brackets",
+      "![][prazdny]\n\n[prazdny]: <https://example.org/c.png>",
+      "https://example.org/c.png",
+    ],
+    [
+      "an image inside a link",
+      "[![](https://example.org/d.png)](/kontakt/)",
+      "https://example.org/d.png",
+    ],
+    [
+      "an HTML image in a sentence",
+      'Věta <img src="https://example.org/e.png"> pokračuje.',
+      "https://example.org/e.png",
+    ],
+    [
+      "an HTML image with an empty alt",
+      '<img src="https://example.org/f.png" alt="">',
+      "https://example.org/f.png",
+    ],
+    [
+      "an HTML image inside a block",
+      '<div class="x"><p><img alt="" src="https://example.org/g.png"></p></div>',
+      "https://example.org/g.png",
+    ],
+    [
+      "an image in a table",
+      "| A |\n| - |\n| ![](https://example.org/h.png) |",
+      "https://example.org/h.png",
+    ],
+  ];
+  for (const [form, markdown, src] of imagesWithoutAlt) {
+    test(`an image without alternative text is found: ${form}`, () => {
+      const problems = problemsAfter((dir) =>
+        edit(dir, "cs/pages/index.md", "Text úvodní", `${markdown}\n\nText úvodní`),
+      );
+      expect(problems).toContain(`cs/pages/index.md: the image ${src} has no alternative text`);
+    });
+  }
+
+  test("images with their alternative text pass, in every form", () => {
+    const markdown = [
+      "![Graf](../media/share.png)",
+      "![Logo][logo]",
+      '<img src="https://example.org/a.png" alt="Ilustrace">',
+      "[logo]:\n  https://example.org/logo.png",
+      "Text úvodní",
+    ].join("\n\n");
+    const problems = problemsAfter((dir) =>
+      edit(dir, "cs/pages/index.md", "Text úvodní", markdown),
+    );
+    expect(problems).toEqual([]);
+  });
+
+  test("a local image a text renders must exist, in any form", () => {
+    const problems = problemsAfter((dir) =>
       edit(
         dir,
         "cs/pages/index.md",
         "Text úvodní",
-        '<img src="../media/share.png" alt="">\n\nText úvodní',
+        "![Graf][g]\n\n[g]: ../media/chybi.png\n\nText úvodní",
       ),
     );
-    expect(inHtml.join("\n")).toContain("has no alternative text");
+    expect(problems).toContain("cs/pages/index.md: the image ../media/chybi.png does not exist");
   });
+
+  const deadLinks: [string, string][] = [
+    ["a reference link", "[Kontakt][k]\n\n[k]: /kontakty/"],
+    ["a reference with its address on the next line", "[Kontakt][k]\n\n[k]:\n  /kontakty/"],
+    ["an HTML link", 'Napište <a href="/kontakty/">nám</a>.'],
+    [
+      "an image that links by reference",
+      "[![Logo](https://example.org/l.png)][k]\n\n[k]: /kontakty/",
+    ],
+  ];
+  for (const [form, markdown] of deadLinks) {
+    test(`a dead link inside the website is found: ${form}`, () => {
+      const problems = problemsAfter((dir) =>
+        edit(dir, "cs/pages/index.md", "Text úvodní", `${markdown}\n\nText úvodní`),
+      );
+      expect(problems).toContain(
+        "cs/pages/index.md: the link /kontakty/ leads to no page of the website",
+      );
+    });
+  }
 
   test("a link inside the website must lead to a page, with its trailing slash", () => {
     const dead = problemsAfter((dir) =>
