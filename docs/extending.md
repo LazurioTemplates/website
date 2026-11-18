@@ -28,7 +28,7 @@ knowledge base):
 | `@astrojs/check` | 0.9.12 | Type check of `.astro` files |
 | TypeScript | 6.0.3 | `astro check` does not support TypeScript 7 yet |
 | Biome | 2.6.4 | Lint and format in one tool |
-| `@lazurio/module-kit` | 0.2.0 | Listener, shutdown and development server options |
+| `@lazurio/module-kit` | 0.4.0 | Listener, shutdown and development server options |
 
 Every dependency is pinned exactly (no `^` or `~`) and `bun.lock` is
 committed; the module test fails on a range. As the profile asks, Biome
