@@ -25,7 +25,7 @@ without the person's instruction. LazurioTemplates publishes the template.
 
 - App generation `app/v2`: the App has no data layer of its own; its content
   lies beside it in `data/v2/` with a declared structure the App checks.
-- Stack profile [`content@2026.11`](https://github.com/Lazurio/LazurioPlatform/blob/main/docs/stack-profiles.md#content): Bun 1.4.4, Astro 7.4.5,
+- Stack profile [`content@2026.12`](https://github.com/Lazurio/LazurioPlatform/blob/main/docs/stack-profiles.md#content): Bun 1.4.4, Astro 7.4.5,
   TypeScript 6.0.3, Biome 2.6.4, every version exact.
 - Two languages: the interface, the example content and the starting content
   in Czech (the default) and English; `data/v2/language.yaml` chooses one for

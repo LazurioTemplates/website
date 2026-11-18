@@ -17,7 +17,7 @@ App checks (Zod schemas in Astro content collections), and people and agents
 change it in pull requests like the code. That is `app/v2`. In `app/v1` the
 content would be part of the App, without a contract of its own.
 
-The tools follow the stack profile **[`content@2026.11`](https://github.com/Lazurio/LazurioPlatform/blob/main/docs/stack-profiles.md#content)** of Lazurio,
+The tools follow the stack profile **[`content@2026.12`](https://github.com/Lazurio/LazurioPlatform/blob/main/docs/stack-profiles.md#content)** of Lazurio,
 shared by the Marketplace templates built on Astro (design system, website,
 knowledge base):
 
