@@ -231,9 +231,11 @@ Look at the website in the browser as `AGENTS.md` describes (build, preview on
 a free port, 1280 and 390 px) and put screenshots into the pull request. Open
 the module's pull request with what you did, what you verified, the merged
 release and commit, and what is left. After both pull requests are merged and
-the module is checked out on `main`, `lazurio module setup` must report it
-`current`, and `lazurio module start <Organization>/<slug> --json` returns the
-URL to open. A preview before the merge is not proof that the module runs in
+the module is checked out on `main`, `lazurio module start
+<Organization>/<slug> --json` returns the URL to open; once the installed
+Lazurio has `lazurio module setup`
+([LazurioPlatform#423](https://github.com/Lazurio/LazurioPlatform/issues/423)),
+it must also report the module `current`. A preview before the merge is not proof that the module runs in
 the Organization.
 
 ## 9. Access for Teams, last

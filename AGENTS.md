@@ -210,8 +210,11 @@ stay publishable:
 cd app/v2
 bun install --frozen-lockfile
 bun run check      # astro check, Biome, the content of data/v2 and every test, the build of each kept language included
-lazurio module setup <path to the module> --root <Lazurio Folder> --json
 ```
 
-The expected `module setup` status is `current`. Then look at the website in
-the browser as above.
+Then look at the website in the browser as above. Once the installed Lazurio
+has `lazurio module setup` (it does not yet,
+[LazurioPlatform#423](https://github.com/Lazurio/LazurioPlatform/issues/423)),
+also run `lazurio module setup <path to the module> --root <Lazurio Folder>
+--json` and expect the status `current`; until then the pull request says that
+this check could not run, and its absence does not block a review.
