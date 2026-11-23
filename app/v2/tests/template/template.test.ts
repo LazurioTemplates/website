@@ -47,7 +47,7 @@ describe.skipIf(!isTemplate)("template contract", () => {
     expect(packageJson.dependencies.astro).toBe("7.4.5");
     expect(packageJson.devDependencies.typescript).toBe("6.0.3");
     expect(packageJson.devDependencies["@biomejs/biome"]).toBe("2.6.4");
-    expect(read("README.md")).toContain("content@2027.01");
+    expect(read("README.md")).toContain("content@2027.02");
     expect((packageJson.dependencies as Record<string, string>)["design-system"]).toBe(
       "github:LazurioTemplates/design-system#v2.0.0",
     );

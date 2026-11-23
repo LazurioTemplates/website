@@ -7,7 +7,7 @@ version is independent of the App generation (`docs/extending.md`).
 
 ### For whoever runs it
 
-- The stack profile release `content@2027.01`: `@lazurio/module-kit` v0.5.0
+- The stack profile release `content@2027.02`: `@lazurio/module-kit` v0.6.0
   instead of v0.4.0. Nothing people see changes, and nothing in an adopted
   copy's own files; take it by merging the tag.
 
