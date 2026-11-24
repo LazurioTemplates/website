@@ -17,7 +17,7 @@ App checks (Zod schemas in Astro content collections), and people and agents
 change it in pull requests like the code. That is `app/v2`. In `app/v1` the
 content would be part of the App, without a contract of its own.
 
-The tools follow the stack profile **[`content@2026.12`](https://github.com/Lazurio/LazurioPlatform/blob/main/docs/stack-profiles.md#content)** of Lazurio,
+The tools follow the stack profile **[`content@2027.02`](https://github.com/Lazurio/LazurioPlatform/blob/main/docs/stack-profiles.md#content)** of Lazurio,
 shared by the Marketplace templates built on Astro (design system, website,
 knowledge base):
 
@@ -28,7 +28,7 @@ knowledge base):
 | `@astrojs/check` | 0.9.12 | Type check of `.astro` files |
 | TypeScript | 6.0.3 | `astro check` does not support TypeScript 7 yet |
 | Biome | 2.6.4 | Lint and format in one tool |
-| `@lazurio/module-kit` | 0.4.0 | Listener, shutdown and development server options |
+| `@lazurio/module-kit` | 0.6.0 | Listener, shutdown and development server options |
 
 Every dependency is pinned exactly (no `^` or `~`) and `bun.lock` is
 committed; the module test fails on a range. As the profile asks, Biome

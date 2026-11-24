@@ -5,6 +5,12 @@ version is independent of the App generation (`docs/extending.md`).
 
 ## Unreleased
 
+### For whoever runs it
+
+- The stack profile release `content@2027.02`: `@lazurio/module-kit` v0.6.0
+  instead of v0.4.0. Nothing people see changes, and nothing in an adopted
+  copy's own files; take it by merging the tag.
+
 ## 0.2.0 — 2026-11-18
 
 On the stack profile `content@2026.12`, and ready as an Application of an
